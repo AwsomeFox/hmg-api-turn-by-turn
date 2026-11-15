@@ -254,16 +254,22 @@ public final class Dipo {
             }
         });
         // the CarPlay library's disableBluetooth: DiPO disconnects the phone's whole Bluetooth link, as for
-        // wired CarPlay. On a wireless session some phones then end it after about a minute (#85), so the
-        // link stays up while wireless CarPlay runs (persist.ev6.cpwl.keepbt=0: DiPO's way)
-        mod.hook(cl, "dipo.carplay.disable_bluetooth", new MethodHook() {
-            @Override
-            protected void beforeHookedMethod(Param p) {
-                if (!Bridge.sCpWireless || "0".equals(Bridge.prop("persist.ev6.cpwl.keepbt", "1"))) return;
-                log("DiPO: Bluetooth kept up for wireless CarPlay (disableBluetooth skipped)");
-                p.setResult(null);
-            }
-        });
+        // wired CarPlay. On a wireless session some phones then end it after about a minute (#5), so the
+        // link stays up while wireless CarPlay runs (persist.ev6.cpwl.keepbt=0: DiPO's way). A car whose
+        // map has no such point yet (made from a Car Report older than HMG-API 1.1.0) goes without: the
+        // hooks after this one must still go in.
+        if (Points.has("dipo.carplay.disable_bluetooth")) {
+            mod.hook(cl, "dipo.carplay.disable_bluetooth", new MethodHook() {
+                @Override
+                protected void beforeHookedMethod(Param p) {
+                    if (!Bridge.sCpWireless || "0".equals(Bridge.prop("persist.ev6.cpwl.keepbt", "1"))) return;
+                    log("DiPO: Bluetooth kept up for wireless CarPlay (disableBluetooth skipped)");
+                    p.setResult(null);
+                }
+            });
+        } else {
+            log("DiPO: this car's map has no dipo.carplay.disable_bluetooth: Bluetooth isn't kept up for wireless CarPlay");
+        }
         // DiPO's own wireless CarPlay (Hyundai's) stays off: the feature file is there for the other apps
         mod.hook(cl, "dipo.utils.is_support_wireless_carplay", new MethodHook() {
             @Override
