@@ -6,6 +6,10 @@ import hmgapi.mods.wireless.api.CarPlayIdentification;
 public final class IdentityRegistryHarness {
     public static void main(String[] args) {
         IdentityRegistry registry = new IdentityRegistry();
+        final StringBuilder log = new StringBuilder();
+        registry.logger(new IdentityRegistry.Logger() {
+            @Override public void log(String message) { log.append(message).append('\n'); }
+        });
         CarPlayIdentification.Connector[] connectors = {
             new CarPlayIdentification.Connector(CarPlayIdentification.VehicleIdentity.CONNECTOR_CCS, 235000),
             new CarPlayIdentification.Connector(CarPlayIdentification.VehicleIdentity.CONNECTOR_AC, 10900)
@@ -21,6 +25,10 @@ public final class IdentityRegistryHarness {
         } catch (IllegalStateException expected) {}
         registry.removeTheme("fixture.theme");
         check(registry.theme() == null && registry.vehicle() != null, "independent removal");
+        check(log.toString().contains("fixture.ev: register vehicle identity"), "vehicle request logged");
+        check(log.toString().contains("fixture.theme: register theme identity"), "theme request logged");
+        check(log.toString().contains("fixture.conflict: register theme identity"), "rejected request logged");
+        check(log.toString().contains("fixture.theme: remove theme identity"), "removal request logged");
         System.out.println("PASS mock mods compose independent vehicle and theme contributions");
     }
 

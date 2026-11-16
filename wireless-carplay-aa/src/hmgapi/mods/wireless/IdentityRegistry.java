@@ -7,13 +7,16 @@ import hmgapi.mods.wireless.api.CarPlayIdentification;
 
 /** Process-local, validated contributions consumed by the native serializer. */
 final class IdentityRegistry implements CarPlayIdentification {
+    interface Logger { void log(String message); }
     private final Map<String, VehicleIdentity> vehicles = new LinkedHashMap<String, VehicleIdentity>();
     private final Map<String, ThemeIdentity> themes = new LinkedHashMap<String, ThemeIdentity>();
     private Runnable changed;
+    private Logger logger;
 
     @Override
     public void registerVehicle(String modId, VehicleIdentity vehicle) {
         checkModId(modId);
+        log("API request from " + modId + ": register vehicle identity");
         if (vehicle == null) throw new IllegalArgumentException("vehicle");
         Runnable notify;
         synchronized (this) {
@@ -27,6 +30,7 @@ final class IdentityRegistry implements CarPlayIdentification {
     @Override
     public void removeVehicle(String modId) {
         checkModId(modId);
+        log("API request from " + modId + ": remove vehicle identity");
         Runnable notify;
         synchronized (this) { vehicles.remove(modId); notify = changed; }
         if (notify != null) notify.run();
@@ -35,6 +39,7 @@ final class IdentityRegistry implements CarPlayIdentification {
     @Override
     public void registerTheme(String modId, ThemeIdentity theme) {
         checkModId(modId);
+        log("API request from " + modId + ": register theme identity");
         if (theme == null) throw new IllegalArgumentException("theme");
         Runnable notify;
         synchronized (this) {
@@ -48,6 +53,7 @@ final class IdentityRegistry implements CarPlayIdentification {
     @Override
     public void removeTheme(String modId) {
         checkModId(modId);
+        log("API request from " + modId + ": remove theme identity");
         Runnable notify;
         synchronized (this) { themes.remove(modId); notify = changed; }
         if (notify != null) notify.run();
@@ -69,6 +75,14 @@ final class IdentityRegistry implements CarPlayIdentification {
     }
 
     synchronized void onChange(Runnable listener) { changed = listener; }
+
+    synchronized void logger(Logger value) { logger = value; }
+
+    private void log(String message) {
+        Logger value;
+        synchronized (this) { value = logger; }
+        if (value != null) value.log(message);
+    }
 
     private static void checkModId(String modId) {
         if (modId == null || modId.length() == 0 || modId.length() > 128 || modId.indexOf(0) >= 0)

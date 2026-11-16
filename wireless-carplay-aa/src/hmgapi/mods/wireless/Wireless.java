@@ -56,7 +56,10 @@ public final class Wireless extends ModEntry {
         "update_tp_destination_name", "update_tp_turn_list", "update_tp_turn_list_new", "update_tp_lane_info", "update_lane_info" };
 
     @Override
-    public void zygoteInit(ModContext mod) {
+    public void zygoteInit(final ModContext mod) {
+        identity.logger(new IdentityRegistry.Logger() {
+            @Override public void log(String message) { mod.log("CarPlay identity " + message); }
+        });
         mod.publish(hmgapi.mods.wireless.api.CarPlayIdentification.SERVICE, identity);
     }
 
@@ -114,7 +117,8 @@ public final class Wireless extends ModEntry {
      */
     private void iap2(final ModContext mod, LoadedApp app) {
         final ClassLoader cl = app.classLoader;
-        IdentityInstaller.install(mod, app, identity);
+        if (mod.settingBoolean("shared_identity", true)) IdentityInstaller.install(mod, app, identity);
+        else mod.log("CarPlay identity sharing is off; contributions are not applied");
         if (mod.settingBoolean("tbt", true)) {
             mod.hook(cl, "iap2.init_info.check_supports_features", new MethodHook() {
                 @Override
