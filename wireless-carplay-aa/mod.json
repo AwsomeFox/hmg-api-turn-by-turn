@@ -125,6 +125,7 @@
         "recipes/aa-tbt-a0bea1c4.recipe"
       ],
       "libCarPlayCore.so": [
+        "recipes/carplay-core-frames-ef49c09b.recipe",
         "recipes/carplay-core-wifi.recipe"
       ],
       "libCarPlayAudio.so": [
