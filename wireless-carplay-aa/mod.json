@@ -1,13 +1,16 @@
 {
   "id": "wireless-carplay-aa",
   "name": "Wireless CarPlay + Android Auto",
-  "version": "2.2.0-beta.8",
-  "hmgapi": ">=1.0.0",
+  "version": "2.2.0-rc.3",
+  "hmgapi": ">=1.1.0",
   "authors": [
     "VysseCodes"
   ],
   "license": "AGPL-3.0",
-  "nemesis_conflicts": ["wireless.projection", "projection.tbt"],
+  "nemesis_conflicts": [
+    "wireless.projection",
+    "projection.tbt"
+  ],
   "description": "Wireless CarPlay and Android Auto on the head unit's hotspot, with turn-by-turn on the cluster and HUD.",
   "api": {
     "packages": [
@@ -29,9 +32,28 @@
     },
     {
       "model": [
+        "NEEV",
+        "NEEV23"
+      ],
+      "region": "USA",
+      "firmware": "260903",
+      "features": [
+        "hmgapi.wifi"
+      ]
+    },
+    {
+      "model": [
         "CVEV",
         "NEEV"
       ],
+      "region": "CAN",
+      "firmware": "260206",
+      "features": [
+        "hmgapi.wifi"
+      ]
+    },
+    {
+      "model": "CEEV",
       "region": "CAN",
       "firmware": "260206",
       "features": [
@@ -107,6 +129,7 @@
       "dipo.carplay.session_started": "observe",
       "dipo.carplay.session_finalized": "observe",
       "dipo.carplay.iap_message": "observe",
+      "dipo.carplay.disable_bluetooth": "replace",
       "dipo.utils.is_support_wireless_carplay": "replace",
       "dipo.iap2_listener.connected": "replace",
       "dipo.iap2_listener.disconnected": "replace",
@@ -118,9 +141,11 @@
     "native": {
       "libautoreceiver_infobank.so": [
         "recipes/aa-tbt-48ee793a.recipe",
-        "recipes/aa-tbt-a0bea1c4.recipe"
+        "recipes/aa-tbt-a0bea1c4.recipe",
+        "recipes/aa-tbt-dbfe7bd2.recipe"
       ],
       "libCarPlayCore.so": [
+        "recipes/carplay-core-frames-ef49c09b.recipe",
         "recipes/carplay-core-wifi.recipe"
       ],
       "libCarPlayAudio.so": [
@@ -133,5 +158,24 @@
         "recipes/carplay-identification-fc7.recipe"
       ]
     }
+  },
+  "network": {
+    "rules": [
+      {
+        "chain": "input",
+        "in": "hotspot",
+        "to": "hotspot",
+        "ip": 4,
+        "proto": "tcp",
+        "ports": [
+          40515
+        ],
+        "state": [
+          "new"
+        ],
+        "action": "accept",
+        "when": "settings.aa_firewall"
+      }
+    ]
   }
 }

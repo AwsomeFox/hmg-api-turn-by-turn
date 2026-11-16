@@ -6,7 +6,8 @@
       "type": "toggle",
       "default": true,
       "title": "Turn-by-turn on the cluster and HUD",
-      "apply": "rebuild"
+      "apply": "rebuild",
+      "description": "Android Auto's turns need a known version of the car's Android Auto library; on one the mod doesn't know, they stay off and the car's own navigation keeps the cluster. CarPlay's turns don't depend on it."
     },
     {
       "key": "tbt_standard",
@@ -53,6 +54,14 @@
       "apply": "restart",
       "title": "USB drives and hubs don't start wired Android Auto",
       "description": "A hook in the Android Auto app (no files changed). Without it, a USB drive can block wireless Android Auto until the head unit restarts."
+    },
+    {
+      "key": "aa_firewall",
+      "type": "toggle",
+      "default": false,
+      "title": "Allow wireless Android Auto through the hotspot firewall",
+      "apply": "rebuild",
+      "description": "Experimental for Ioniq 6 CAN 260206. Allows new IPv4 TCP connections to port 40515 only from the car's hotspot subnet. HMG-API manages the rule and removes it when this setting or the mod is disabled. Leave off on cars that connect without it."
     }
   ]
 }
