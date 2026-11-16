@@ -36,7 +36,7 @@ in-memory patches; disk changes appear in the app's plan.
 |---|---|---|
 | Kia EV6 (`CVEV`) | USA | 260507 |
 | Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | 260507 |
-| Hyundai Ioniq 5 (`NEEV23`) | USA | 260903 |
+| Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | 260903 |
 | Kia EV6 (`CVEV`) | Canada | 260206 |
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
