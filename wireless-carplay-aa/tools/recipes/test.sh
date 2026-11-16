@@ -18,5 +18,11 @@ for x in core:carplay-core-wifi audio:carplay-audio-formats utils:carplay-utils-
     [ -f "$lib" ] && [ -x $L ] || continue
     $L apply $rc "$lib" "$CP/${x#*:}.so" >/dev/null && set -- "$@" "$lib" "$CP/${x#*:}.so" $rc
 done
+# US 260903's libCarPlayAudio (2b748bf8) is the Korean Ioniq 5's, byte for byte; the audio
+# recipe's regions are unchanged there, so it applies as on 260507 (Core and Utils are native)
+lib=$H/stock/neev_kr/lib/libCarPlayAudio.so; rc=$R/carplay-audio-formats.recipe
+if [ -f "$lib" ] && [ -x $L ] && $L apply $rc "$lib" "$CP/audio-260903.so" >/dev/null; then
+    set -- "$@" "$lib" "$CP/audio-260903.so" $rc
+fi
 [ $# -gt 0 ] || { echo "no stock libraries in $H (skipped)"; exit 0; }
 exec java -cp "$SDK/lib/hmgapi-engine.jar:$SDK/test/hmgapi-engine-test.jar" hmgapi.engine.MemRecipeTest "$@"

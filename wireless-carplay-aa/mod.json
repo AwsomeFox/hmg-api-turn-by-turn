@@ -1,7 +1,7 @@
 {
   "id": "wireless-carplay-aa",
   "name": "Wireless CarPlay + Android Auto",
-  "version": "2.2.0-rc.2",
+  "version": "2.2.0-rc.3",
   "hmgapi": ">=1.1.0",
   "authors": [
     "VysseCodes"
@@ -18,6 +18,16 @@
       ],
       "region": "USA",
       "firmware": "260507",
+      "features": [
+        "hmgapi.wifi"
+      ]
+    },
+    {
+      "model": [
+        "NEEV23"
+      ],
+      "region": "USA",
+      "firmware": "260903",
       "features": [
         "hmgapi.wifi"
       ]
