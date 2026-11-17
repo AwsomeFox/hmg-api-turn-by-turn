@@ -38,8 +38,8 @@ in-memory patches; disk changes appear in the app's plan.
 | Car | Region | Head unit software |
 |---|---|---|
 | Kia EV6 (`CVEV`) | USA | 260507 |
-| Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | 260507 |
-| Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | 260903 |
+| Hyundai Ioniq 5 (`NEEV`, `NEEV23`, `NEEV23SE`) | USA | 260507 |
+| Hyundai Ioniq 5 (`NEEV`, `NEEV23`, `NEEV23SE`) | USA | 260903 |
 | Kia EV6 (`CVEV`) | Canada | 260206 |
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
 | Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
