@@ -14,7 +14,7 @@ released from this repository.
 ## What it does
 
 Each part is a setting in the HMG-API app (pick the mod in its list for its settings).
-The firewall workaround is off by default; the other settings below are on:
+The firewall workarounds are off by default; the other settings below are on:
 
 | Setting | What |
 |---|---|
@@ -22,9 +22,11 @@ The firewall workaround is off by default; the other settings below are on:
 | Wireless CarPlay | The Bluetooth bridge and Wi-Fi sessions CarPlay needs |
 | Shared CarPlay identity | A typed API other mods use to contribute vehicle identity without competing native patches |
 | CarPlay music and Siri over Wi-Fi | AAC and Opus audio (`libleafiaaac.so`, using the head unit's own codecs) |
+| Song, artist and album art on wireless CarPlay | A hook in DiPO: asks the phone for Now Playing again once wireless CarPlay's session is up, for the cluster and the split screen |
 | Settings > Phone Projection opens Device Connections | A hook in the Settings app (US/Canada) |
 | USB drives and hubs don't start wired Android Auto | A hook in the Android Auto app: a USB stick no longer blocks wireless Android Auto |
 | Allow wireless Android Auto through the hotspot firewall | **Off by default.** Experimental Ioniq 6 workaround: new IPv4 TCP connections on hotspot port 40515 |
+| Allow wireless CarPlay through the hotspot firewall | **Off by default.** Needed on the US Ioniq 6 260507: CarPlay's ports (TCP and UDP) and ICMPv6 from the hotspot |
 
 HMG-API backs up modified files and restores their original bytes when the mod is
 removed. Native recipes verify the bytes at each patch site. The Ioniq 6 feature
@@ -40,6 +42,7 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | 260903 |
 | Kia EV6 (`CVEV`) | Canada | 260206 |
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
+| Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
 | Hyundai Ioniq 6 (`CEEV`), owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | CEEV.USA.0000.V016.010.260903 |
 
@@ -48,6 +51,13 @@ the owner confirmed wireless Android Auto and Google Maps directions on the dash
 with private build `2.2.0-beta.101`. This is one owner report on the exact firmware;
 CarPlay, HUD/AR behavior and every maneuver/lifecycle case are not separately
 validated.
+
+The US Ioniq 6 on 260507 (`CEEV.USA.0000.V015.012.260507`) was tested on a 2023 car
+with a fork of 2.1.0: wireless CarPlay, music, calls and Now Playing on the cluster.
+Its stock firewall allows the CarPlay ports only on the wired link, so turn on **Allow
+wireless CarPlay through the hotspot firewall** there.
+It needs HMG-API's hook map for that build (HMG-API #264), which comes with the
+HMG-API release after 1.1.0-rc.3.
 
 The list is `system` in [`wireless-carplay-aa/mod.json`](wireless-carplay-aa/mod.json).
 It needs the head unit's Wi-Fi hardware and a hook map for the car in HMG-API
@@ -134,6 +144,9 @@ HMGAPI_SDK=$HMGAPI_SDK sh wireless-carplay-aa/tools/aaturns/test.sh
 ```
 ```
 HMGAPI_SDK=$HMGAPI_SDK sh wireless-carplay-aa/tools/cpturns/test.sh
+```
+```
+sh wireless-carplay-aa/tools/reattach/test.sh
 ```
 ```
 HMGAPI_SDK=$HMGAPI_SDK sh wireless-carplay-aa/tools/recipes/test.sh

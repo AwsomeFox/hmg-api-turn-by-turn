@@ -40,6 +40,14 @@
       "apply": "rebuild"
     },
     {
+      "key": "now_playing",
+      "type": "toggle",
+      "default": true,
+      "title": "Song, artist and album art on wireless CarPlay",
+      "apply": "restart",
+      "description": "A hook in the CarPlay app (no files changed): asks the phone for Now Playing again once wireless CarPlay's session is up, for the cluster, the split screen and album art apps."
+    },
+    {
       "key": "menu",
       "type": "toggle",
       "default": true,
@@ -62,6 +70,14 @@
       "title": "Allow wireless Android Auto through the hotspot firewall",
       "apply": "rebuild",
       "description": "Experimental for Ioniq 6 CAN 260206. Allows new IPv4 TCP connections to port 40515 only from the car's hotspot subnet. HMG-API manages the rule and removes it when this setting or the mod is disabled. Leave off on cars that connect without it."
+    },
+    {
+      "key": "cp_firewall",
+      "type": "toggle",
+      "default": false,
+      "title": "Allow wireless CarPlay through the hotspot firewall",
+      "apply": "rebuild",
+      "description": "Needed on the Ioniq 6 USA 260507, whose stock firewall allows the CarPlay ports only on the wired link. Accepts CarPlay's ports (5000-5001, 5020, 6000-6003, 6011, 6020, 6030, 7000; TCP and UDP, as destination or source) and ICMPv6, IPv4 and IPv6, only from the hotspot's own addresses. HMG-API manages the rules and removes them when this setting or the mod is disabled. Leave off on cars that connect without it."
     }
   ]
 }
