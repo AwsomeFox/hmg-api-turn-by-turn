@@ -59,6 +59,14 @@
       "features": [
         "hmgapi.wifi"
       ]
+    },
+    {
+      "model": "CEEV",
+      "region": "CAN",
+      "firmware": "260903",
+      "features": [
+        "hmgapi.wifi"
+      ]
     }
   ],
   "parts": [
