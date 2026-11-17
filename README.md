@@ -43,11 +43,11 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
 | Hyundai Ioniq 6 (`CEEV`), owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | CEEV.USA.0000.V016.010.260903 |
 
-The Ioniq 6 addition requires the matching HMG-API hook map. On November 9, 2026,
-the owner confirmed wireless Android Auto and Google Maps directions on the dash
-with private build `2.2.0-beta.101`. This is one owner report on the exact firmware;
-CarPlay, HUD/AR behavior and every maneuver/lifecycle case are not separately
-validated.
+The Canadian Ioniq 6 needs HMG-API's hook map for its build. On November 9, 2026, an
+owner confirmed wireless Android Auto and Google Maps directions on the dash there,
+on a test build of this mod. That's one owner report on that firmware: CarPlay, the
+HUD and every maneuver aren't separately confirmed
+([Ioniq 6 Canada notes](docs/ioniq6-can-260206.md)).
 
 The list is `system` in [`wireless-carplay-aa/mod.json`](wireless-carplay-aa/mod.json).
 It needs the head unit's Wi-Fi hardware and a hook map for the car in HMG-API
@@ -57,30 +57,20 @@ Other regions wait for now. Your car isn't listed? Open an "Add my car" issue.
 
 ## Installing
 
-Install HMG-API **1.1.0-beta.1 or newer** first ([Installing HMG-API](https://github.com/Open-HMG/HMG-API/wiki/Installing-HMG-API)).
+Install HMG-API first ([Installing HMG-API](https://github.com/Open-HMG/HMG-API/wiki/Installing-HMG-API)).
+Then, from this repository's [releases](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/releases):
 
-- **HMG-API USB installation:** leave the ZIP unopened in `HMGAPI/updates/`, then
-  use HMG-API → Check USB updates. Confirm version `2.2.0-beta.101`, enable the
-  hotspot firewall option and TBT, Apply successfully and restart while parked.
-  Leave the alternative AR HUD format off unless separately testing it. Remove
-  the USB before connecting AA.
-- **Signing transition:** the original CI test and upstream package use different
-  signing keys. Moving from either to this private release requires normal removal
-  of only the wireless module, Apply/restart, then installation. Keep HMG-API and
-  the checked map installed. The retained private signer is
-  `c2318db4-4435-830e-9ef0-297ce6a863fc`; later private updates must use that key.
-- **NEMESIS alternative:** the release includes the matching `-nemesis.zip` USB
-  layout and `-nemesis-package.zip`. Their numeric version is `2.1.98.101` and their
-  compatibility list includes CEEV CAN 260206. Do not substitute an old upstream ZIP.
+- **USB stick**: put `wireless-carplay-aa-<version>.zip` in `HMGAPI/updates/` on the
+  stick, then HMG-API app → Check USB updates → the mod → Apply changes.
+- **NEMESIS**: unzip `wireless-carplay-aa-<version>-nemesis.zip` onto the top level of a
+  USB stick and confirm the install in NEMESIS Manager.
+- **adb**: `adb push` the zip, then `hmgapid engine install <zip>`, `plan`, `apply`.
 
-[Setup and rollback](docs/ioniq6-can-260206.md) covers limits
-and the core beta's existing Apply-error behavior.
-
-Routine CI artifacts retain the upstream source version and use disposable keys;
-use the release asset for the car. [Private packaging and publication](docs/private-test-packages.md)
-documents the retained-key process. Original [upstream releases](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/releases)
-use author key `7251ce71-a146-8a1e-958b-dbffc6af7359` and are separate from this
-private Ioniq 6 package.
+[Installing and removing mods](https://github.com/Open-HMG/HMG-API/wiki/Installing-and-removing-mods)
+has the steps. Updates must be signed with the same author key as the installed version.
+Every release here is signed with author key `7251ce71-a146-8a1e-958b-dbffc6af7359` (VysseCodes).
+A test build signed with another key installs only after the mod is removed, and the
+releases here can't update it.
 
 ## Hook points live in HMG-API
 
@@ -152,10 +142,8 @@ without them those parts say "skipped" and pass. `native/leafiaaac/build.sh` reb
 generic `files/libcarplayidentity.so`; its equivalence test executes the ARM serializer
 and compares its output with the former EV Routing implementation.
 
-Upstream releases use `v<mod.json version>` and the inherited upstream signing
-workflow (see [CONTRIBUTING.md](CONTRIBUTING.md)). Private Ioniq 6 releases use the
-separate [publication procedure](docs/private-test-packages.md) and preserve the
-tested retained-key artifact; do not trigger the upstream workflow with a private tag.
+Releases use `v<mod.json version>` tags and the signing workflow (see
+[CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## License
 
