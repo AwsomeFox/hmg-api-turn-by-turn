@@ -9,7 +9,8 @@
   "license": "AGPL-3.0",
   "nemesis_conflicts": [
     "wireless.projection",
-    "projection.tbt"
+    "projection.tbt",
+    "enhanced.projection"
   ],
   "description": "Wireless CarPlay and Android Auto on the head unit's hotspot, with turn-by-turn on the cluster and HUD.",
   "api": {
@@ -22,7 +23,8 @@
       "model": [
         "CVEV",
         "NEEV",
-        "NEEV23"
+        "NEEV23",
+        "NEEV23SE"
       ],
       "region": "USA",
       "firmware": "260507",
@@ -33,7 +35,8 @@
     {
       "model": [
         "NEEV",
-        "NEEV23"
+        "NEEV23",
+        "NEEV23SE"
       ],
       "region": "USA",
       "firmware": "260903",
