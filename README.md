@@ -45,6 +45,7 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
 | Hyundai Ioniq 6 (`CEEV`), owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | CEEV.USA.0000.V016.010.260903 |
+| Kia Sportage Hybrid (`NQ5HEV`) — not yet tested on the car | USA | 260507 |
 
 The Canadian Ioniq 6 needs HMG-API's hook map for its build. On November 9, 2026, an
 owner confirmed wireless Android Auto and Google Maps directions on the dash there,
