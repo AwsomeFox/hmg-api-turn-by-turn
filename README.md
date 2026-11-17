@@ -43,11 +43,11 @@ in-memory patches; disk changes appear in the app's plan.
 | Kia EV6 (`CVEV`) | Canada | 260206 |
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
 | Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
-| Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
-| Hyundai Ioniq 6 (`CEEV`), owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | CEEV.USA.0000.V016.010.260903 |
-| Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless CarPlay and turn-by-turn (fork build) | Canada | CEEV.CAN.0000.V016.010.260903 |
+| Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | 260206 |
+| Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | 260903 |
+| Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless CarPlay and turn-by-turn (test build) | Canada | 260903 |
 | Kia Sportage Hybrid (`NQ5HEV`) — not yet tested on the car | USA | 260507 |
-| Hyundai Elantra N (`CN7NPE`) — owner confirmed wireless CarPlay and drive checks | USA | CN7NPE.USA.0000.V016.010.260903 |
+| Hyundai Elantra N (`CN7NPE`) — owner confirmed wireless CarPlay and drive checks | USA | 260903 |
 
 The CN7NPE owner confirmed wireless CarPlay connection/UI on November 16, 2026,
 and audio, Siri, calls, reconnect, navigation/cluster directions and stability
