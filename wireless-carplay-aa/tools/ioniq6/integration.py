@@ -256,12 +256,39 @@ def transaction_and_network(temp, sdk):
 def existing_car_defaults(temp, sdk):
     for product in ("CVEV.USA.0000.V015.012.260507", "NEEV.USA.0000.V015.012.260507",
                     "NEEV23.USA.0000.V015.012.260507", "CVEV.CAN.0000.V015.011.260206",
-                    "NEEV.CAN.0000.V015.011.260206"):
+                    "NEEV.CAN.0000.V015.011.260206", "CEEV.USA.0000.V015.012.260507",
+                    "NQ5HEV.USA.0000.V015.012.260507"):
         unit = Unit(temp / product, sdk, product)
         unit.engine("plan")
         unit.engine("publish-state")
         require(not unit.state("net.rules") and "hmgapi net " not in unit.state("services.txt"),
                 "existing model stays accepted with no default firewall rule: " + product)
+
+
+def carplay_firewall(temp, sdk):
+    unit = Unit(temp / "carplay-firewall", sdk, "CEEV.USA.0000.V015.012.260507")
+    unit.settings(cp_firewall=True)
+    plan = unit.engine("plan")
+    require("allow_network" not in plan, "CarPlay opt-in plan needs no permission for other networks", plan)
+    unit.engine("publish-state")
+    rules = [line for line in unit.state("net.rules").splitlines() if line.startswith("ipt ")]
+    v4 = [r for r in rules if r.startswith("ipt 4 filter HMGAPI_IN -i wlan0 -s 192.168.0.0/24 ")]
+    v6 = [r for r in rules if r.startswith("ipt 6 filter HMGAPI_IN -i wlan0 -s fe80::/10 ")]
+    require(len(rules) == 57 and len(v4) == 28 and len(v6) == 29,
+            "CarPlay opt-in emits only hotspot ingress: 28 IPv4, 28 IPv6 and ICMPv6",
+            unit.state("net.rules"))
+    require(sum("--dport 7000 " in r for r in rules) == 4 and sum("--sport 7000 " in r for r in rules) == 4
+            and sum("icmpv6" in r for r in rules) == 1,
+            "CarPlay ports both ways over TCP and UDP, plus ICMPv6", unit.state("net.rules"))
+    fw = Firewall(unit)
+    fw.once()
+    require(fw.read()["4/filter/INPUT"][0] == "-j HMGAPI_IN" and len(fw.read()["4/filter/HMGAPI_IN"]) == 28
+            and len(fw.read()["6/filter/HMGAPI_IN"]) == 29,
+            "CarPlay rules precede the stock whitelist")
+    unit.settings(cp_firewall=False)
+    unit.engine("publish-state")
+    fw.once()
+    fw.restored()
 
 
 def rejected_units(temp, sdk):
@@ -318,6 +345,7 @@ def main():
         temp = Path(temp)
         transaction_and_network(temp, sdk)
         existing_car_defaults(temp, sdk)
+        carplay_firewall(temp, sdk)
         rejected_units(temp, sdk)
         if args.stock:
             check_private_stock(temp, sdk, args.stock)
