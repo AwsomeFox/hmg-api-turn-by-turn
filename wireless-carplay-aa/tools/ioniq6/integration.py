@@ -286,16 +286,16 @@ def carplay_firewall(temp, sdk):
     rules = [line for line in unit.state("net.rules").splitlines() if line.startswith("ipt ")]
     v4 = [r for r in rules if r.startswith("ipt 4 filter HMGAPI_IN -i wlan0 -s 192.168.0.0/24 ")]
     v6 = [r for r in rules if r.startswith("ipt 6 filter HMGAPI_IN -i wlan0 -s fe80::/10 ")]
-    require(len(rules) == 57 and len(v4) == 28 and len(v6) == 29,
-            "CarPlay opt-in emits only hotspot ingress: 28 IPv4, 28 IPv6 and ICMPv6",
+    require(len(rules) == 69 and len(v4) == 32 and len(v6) == 37,
+            "CarPlay opt-in emits only hotspot ingress: 32 IPv4, 36 IPv6 and ICMPv6",
             unit.state("net.rules"))
     require(sum("--dport 7000 " in r for r in rules) == 4 and sum("--sport 7000 " in r for r in rules) == 4
             and sum("icmpv6" in r for r in rules) == 1,
             "CarPlay ports both ways over TCP and UDP, plus ICMPv6", unit.state("net.rules"))
     fw = Firewall(unit)
     fw.once()
-    require(fw.read()["4/filter/INPUT"][0] == "-j HMGAPI_IN" and len(fw.read()["4/filter/HMGAPI_IN"]) == 28
-            and len(fw.read()["6/filter/HMGAPI_IN"]) == 29,
+    require(fw.read()["4/filter/INPUT"][0] == "-j HMGAPI_IN" and len(fw.read()["4/filter/HMGAPI_IN"]) == 32
+            and len(fw.read()["6/filter/HMGAPI_IN"]) == 37,
             "CarPlay rules precede the stock whitelist")
     unit.settings(cp_firewall=False)
     unit.engine("publish-state")
