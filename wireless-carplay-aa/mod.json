@@ -22,7 +22,9 @@
       "model": [
         "CVEV",
         "NEEV",
-        "NEEV23"
+        "NEEV23",
+        "CEEV",
+        "NQ5HEV"
       ],
       "region": "USA",
       "firmware": "260507",

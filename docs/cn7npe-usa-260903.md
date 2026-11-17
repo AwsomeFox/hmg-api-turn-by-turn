@@ -4,7 +4,7 @@ The owner confirmed wireless CarPlay connection/UI on November 16, 2026, and
 reported the remaining CarPlay drive checks passed without issues on November 17:
 audio and controls, Siri, incoming/outgoing calls, setting persistence, reconnect,
 navigation/cluster directions, guidance cleanup, source switching and sustained use.
-Testing used private `2.2.0-rc.102` on `CN7NPE.USA.0000.V016.010.260903`, with
+Testing used a test build of this mod on `CN7NPE.USA.0000.V016.010.260903`, with
 HMG-API `1.1.0-rc.3` and an enabled local hook map.
 
 This is one owner's confirmation on this exact firmware. Android Auto, on-car
@@ -45,9 +45,8 @@ Android Auto firewall option is not required for CarPlay.
 
 ## Setup
 
-1. Install a package containing this support using HMG-API or its NEMESIS wrapper.
-   The privately tested version number is evidence of the owner test, not an
-   upstream release requirement. Keep the matching HMG-API hook map enabled.
+1. Install a release of this mod from this repository, with HMG-API or its NEMESIS
+   wrapper. Keep the matching HMG-API hook map enabled.
 2. Enable the whole mod first and wait for its settings form to reload. Enable
    **Allow wireless CarPlay through the hotspot firewall**.
 3. Scroll below the settings and press **Save settings**. Wait for **Saved. Apply
@@ -62,7 +61,7 @@ With only the CarPlay option enabled, the report should show 69 HMG-API rules;
 the separate AA option adds one and other mods can add more. If the toggle is
 saved but no rules appear, collect the Car Report and check the saved settings,
 `state/net.rules`, `state/services.txt` and `logs/hmgapi/net.log` under HMG-API's
-data directory. The owner's failed attempt with rc.102 had zero rules because
+data directory. The owner's failed attempt had zero rules because
 the setting had not been retained; connection succeeded after saving it.
 
 The owner's logs show the CarPlay Core and Audio recipes applying, Utils
