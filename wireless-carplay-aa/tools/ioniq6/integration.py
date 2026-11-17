@@ -253,6 +253,16 @@ def transaction_and_network(temp, sdk):
     fw.restored()
 
 
+def ceev_can_firmwares(temp, sdk):
+    for product in (PRODUCT, "CEEV.CAN.0000.V016.010.260903"):
+        unit = Unit(temp / product, sdk, product)
+        before = snapshot(unit.root / "system")
+        unit.engine("apply")
+        require(unit.cfg.read_text() == PATCHED_CFG, "accepted and its feature lines patched: " + product)
+        unit.engine("restore")
+        require(snapshot(unit.root / "system") == before, "restore returns every original /system byte: " + product)
+
+
 def existing_car_defaults(temp, sdk):
     for product in ("CVEV.USA.0000.V015.012.260507", "NEEV.USA.0000.V015.012.260507",
                     "NEEV23.USA.0000.V015.012.260507", "NEEV23SE.USA.0000.V015.012.260507",
@@ -295,7 +305,7 @@ def carplay_firewall(temp, sdk):
 
 def rejected_units(temp, sdk):
     for product in ("CEEV.USA.0000.V015.011.260206", "CEEV.CAN.0000.V015.011.250818",
-                    "CEEV.CAN.0000.V015.012.260206"):
+                    "CEEV.CAN.0000.V015.012.260206", "CEEV.CAN.0000.V015.011.260903"):
         unit = Unit(temp / product, sdk, product)
         before = snapshot(unit.root / "system")
         output = unit.engine("apply", expected=3)
@@ -346,6 +356,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="ioniq6-wireless-test-") as temp:
         temp = Path(temp)
         transaction_and_network(temp, sdk)
+        ceev_can_firmwares(temp, sdk)
         existing_car_defaults(temp, sdk)
         carplay_firewall(temp, sdk)
         rejected_units(temp, sdk)
