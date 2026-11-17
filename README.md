@@ -14,7 +14,7 @@ released from this repository.
 ## What it does
 
 Each part is a setting in the HMG-API app (pick the mod in its list for its settings).
-The firewall workaround is off by default; the other settings below are on:
+The firewall workarounds are off by default; the other settings below are on:
 
 | Setting | What |
 |---|---|
@@ -25,6 +25,7 @@ The firewall workaround is off by default; the other settings below are on:
 | Settings > Phone Projection opens Device Connections | A hook in the Settings app (US/Canada) |
 | USB drives and hubs don't start wired Android Auto | A hook in the Android Auto app: a USB stick no longer blocks wireless Android Auto |
 | Allow wireless Android Auto through the hotspot firewall | **Off by default.** Experimental Ioniq 6 workaround: new IPv4 TCP connections on hotspot port 40515 |
+| Allow wireless CarPlay through the hotspot firewall | **Off by default.** Needed on the US Ioniq 6 260507: CarPlay's ports (TCP and UDP) and ICMPv6 from the hotspot |
 
 HMG-API backs up modified files and restores their original bytes when the mod is
 removed. Native recipes verify the bytes at each patch site. The Ioniq 6 feature
@@ -51,6 +52,8 @@ validated.
 
 The US Ioniq 6 on 260507 (`CEEV.USA.0000.V015.012.260507`) was tested on a 2023 car
 with a fork of 2.1.0: wireless CarPlay, music, calls and Now Playing on the cluster.
+Its stock firewall allows the CarPlay ports only on the wired link, so turn on **Allow
+wireless CarPlay through the hotspot firewall** there.
 It needs HMG-API's hook map for that build, which isn't in HMG-API yet (HMG-API #206,
 #253).
 
