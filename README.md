@@ -44,6 +44,7 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
 | Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
+| Hyundai Ioniq 6 (`CEEV`), owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | CEEV.USA.0000.V016.010.260903 |
 
 The Ioniq 6 addition requires the matching HMG-API hook map. On November 9, 2026,
 the owner confirmed wireless Android Auto and Google Maps directions on the dash
@@ -55,8 +56,8 @@ The US Ioniq 6 on 260507 (`CEEV.USA.0000.V015.012.260507`) was tested on a 2023 
 with a fork of 2.1.0: wireless CarPlay, music, calls and Now Playing on the cluster.
 Its stock firewall allows the CarPlay ports only on the wired link, so turn on **Allow
 wireless CarPlay through the hotspot firewall** there.
-It needs HMG-API's hook map for that build, which isn't in HMG-API yet (HMG-API #206,
-#253).
+It needs HMG-API's hook map for that build (HMG-API #264), which comes with the
+HMG-API release after 1.1.0-rc.3.
 
 The list is `system` in [`wireless-carplay-aa/mod.json`](wireless-carplay-aa/mod.json).
 It needs the head unit's Wi-Fi hardware and a hook map for the car in HMG-API
