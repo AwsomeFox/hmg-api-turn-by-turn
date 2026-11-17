@@ -43,6 +43,9 @@ import hmgapi.hook.Points;
  * for it: its own wireless CarPlay off (that's Hyundai's, not this one), its iAP2
  * listener ignoring the bridge's sessions, the reconnect crash fix and the first-connect
  * notice fix.
+ *
+ * Now Playing ("now_playing", with the bridge): song, artist and album art on wireless
+ * CarPlay, which DiPO only asks the phone for on USB (nowPlaying).
  */
 public final class Dipo {
     private Dipo() {}
@@ -57,7 +60,10 @@ public final class Dipo {
     static ModContext mod;
     static LoadedApp app;
     static volatile IIap2Service iap2;
-    static boolean tbt, bridge;
+    static boolean tbt, bridge, nowPlaying;
+    /** Now Playing asked again this long after the CarPlay channel session comes up */
+    static final long NP_DELAY = 1500;
+    static Handler npHandler;
     static Handler turnsHandler;
     static CpTurns turns;
     static RgListener rg;
@@ -81,6 +87,7 @@ public final class Dipo {
         app = a;
         tbt = m.settingBoolean("tbt", true);
         bridge = m.settingBoolean("bridge", true);
+        nowPlaying = bridge && m.settingBoolean("now_playing", true);
         // the CarPlay libraries, patched in memory once DiPO loads them (files stay stock)
         if (bridge) m.nativePatch(a, "libCarPlayCore.so");   // AirPlay sessions over Wi-Fi
         if (m.settingBoolean("audio", true)) {
@@ -287,6 +294,7 @@ public final class Dipo {
                 if (c == Bridge.COMPONENT_CARPLAY_CLIENT) {
                     Object manager = Points.get(cl, "dipo.iap2_client.manager", Points.get(cl, "dipo.iap2_listener.owner", p.thisObject));
                     Points.call(cl, "dipo.iap2.set_notify_on", null, manager, true);
+                    if (nowPlaying) nowPlaying(manager, true);
                     p.setResult(null);
                 } else if (c == Bridge.COMPONENT_BT_CARPLAY) {
                     p.args[0] = Bridge.COMPONENT_USB;
@@ -296,7 +304,11 @@ public final class Dipo {
         mod.hook(cl, "dipo.iap2_listener.disconnected", new MethodHook() {
             @Override
             protected void beforeHookedMethod(Param p) {
-                if (Bridge.dipoIgnoreDisconnect((Integer) p.args[0])) p.setResult(null);
+                int c = (Integer) p.args[0];
+                if (nowPlaying && c == Bridge.COMPONENT_CARPLAY_CLIENT) {
+                    nowPlaying(Points.get(cl, "dipo.iap2_client.manager", Points.get(cl, "dipo.iap2_listener.owner", p.thisObject)), false);
+                }
+                if (Bridge.dipoIgnoreDisconnect(c)) p.setResult(null);
             }
         });
         mod.hook(cl, "dipo.iap2_listener.notify", new MethodHook() {
@@ -307,7 +319,66 @@ public final class Dipo {
         });
         reconnectFix(cl);
         firstConnectNotice();
+        if (nowPlaying) {
+            HandlerThread t = new HandlerThread("hmgapi-cp-np");
+            t.start();
+            npHandler = new Handler(t.getLooper());
+        }
         log("bridge: wireless CarPlay Bluetooth bridge in DiPO");
+    }
+
+    /**
+     * Now Playing on wireless CarPlay. DiPO asks the phone for Now Playing (Iap2SvcNowPlayingStart)
+     * only when a USB CarPlay session starts. On wireless, iAP2 then moves from the Bluetooth
+     * session to the CarPlay channel, whose identification the bridge keeps from DiPO, so a
+     * subscription made before the move gets one update, then nothing. Once the channel
+     * session is up: stop and start Now Playing again, NP_DELAY later and on its own thread (a
+     * binder call into the iAP2 server from its own callback could deadlock); stopped when the
+     * channel session ends. Through DiPO's own iAP2 connection, so its listener gets the
+     * updates as on USB: the manager's one IIap2Service field (EV6 and Ioniq 6 260507), or
+     * HMG-API's own binding when there isn't one.
+     */
+    private static void nowPlaying(final Object manager, final boolean start) {
+        npHandler.removeCallbacksAndMessages(null);
+        npHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                IIap2Service s = dipoIap2(manager);
+                if (s == null) {
+                    log("Now Playing: no iAP2 connection");
+                    return;
+                }
+                try {
+                    s.Iap2SvcNowPlayingStop();
+                    if (start) s.Iap2SvcNowPlayingStart();
+                    log(start ? "Now Playing: CarPlay channel session up, asking the phone again" : "Now Playing: CarPlay channel session ended, stopped");
+                } catch (Throwable t) {
+                    error("Now Playing", t);
+                }
+            }
+        }, start ? NP_DELAY : 0);
+    }
+
+    /** DiPO's iAP2 connection: the one IIap2Service field of its iAP2 manager (else HMG-API's) */
+    private static IIap2Service dipoIap2(Object manager) {
+        if (manager != null) {
+            for (Class<?> c = manager.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+                for (java.lang.reflect.Field f : c.getDeclaredFields()) {
+                    if (f.getType() != IIap2Service.class) continue;
+                    try {
+                        f.setAccessible(true);
+                        Object s;
+                        synchronized (manager) {
+                            s = f.get(manager);
+                        }
+                        if (s != null) return (IIap2Service) s;
+                    } catch (Throwable t) {
+                        error("Now Playing: DiPO's iAP2 connection", t);
+                    }
+                }
+            }
+        }
+        return iap2;
     }
 
     /**

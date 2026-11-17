@@ -40,6 +40,14 @@
       "apply": "rebuild"
     },
     {
+      "key": "now_playing",
+      "type": "toggle",
+      "default": true,
+      "title": "Song, artist and album art on wireless CarPlay",
+      "apply": "restart",
+      "description": "A hook in the CarPlay app (no files changed): asks the phone for Now Playing again once wireless CarPlay's session is up, for the cluster, the split screen and album art apps."
+    },
+    {
       "key": "menu",
       "type": "toggle",
       "default": true,
