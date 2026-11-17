@@ -40,6 +40,7 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | 260903 |
 | Kia EV6 (`CVEV`) | Canada | 260206 |
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
+| Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
 
 The Ioniq 6 addition requires the matching HMG-API hook map. On November 9, 2026,
@@ -47,6 +48,11 @@ the owner confirmed wireless Android Auto and Google Maps directions on the dash
 with private build `2.2.0-beta.101`. This is one owner report on the exact firmware;
 CarPlay, HUD/AR behavior and every maneuver/lifecycle case are not separately
 validated.
+
+The US Ioniq 6 on 260507 (`CEEV.USA.0000.V015.012.260507`) was tested on a 2023 car
+with a fork of 2.1.0: wireless CarPlay, music, calls and Now Playing on the cluster.
+It needs HMG-API's hook map for that build, which isn't in HMG-API yet (HMG-API #206,
+#253).
 
 The list is `system` in [`wireless-carplay-aa/mod.json`](wireless-carplay-aa/mod.json).
 It needs the head unit's Wi-Fi hardware and a hook map for the car in HMG-API
