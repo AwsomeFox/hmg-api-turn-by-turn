@@ -80,6 +80,14 @@
       "features": [
         "hmgapi.wifi"
       ]
+    },
+    {
+      "model": "CN7NPE",
+      "region": "USA",
+      "firmware": "260903",
+      "features": [
+        "hmgapi.wifi"
+      ]
     }
   ],
   "parts": [
@@ -203,10 +211,12 @@
       {
         "chain": "input",
         "in": "hotspot",
+        "ip": 4,
         "proto": "tcp+udp",
         "ports": [
           "5000-5001",
           5020,
+          5353,
           "6000-6003",
           6011,
           6020,
@@ -220,6 +230,27 @@
       {
         "chain": "input",
         "in": "hotspot",
+        "ip": 6,
+        "proto": "tcp+udp",
+        "ports": [
+          "5000-5001",
+          5020,
+          5353,
+          "6000-6003",
+          6011,
+          6020,
+          6030,
+          6031,
+          7000
+        ],
+        "both_ways": true,
+        "action": "accept",
+        "when": "settings.cp_firewall"
+      },
+      {
+        "chain": "input",
+        "in": "hotspot",
+        "ip": 6,
         "proto": "icmpv6",
         "action": "accept",
         "when": "settings.cp_firewall"

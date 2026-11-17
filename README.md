@@ -26,7 +26,7 @@ The firewall workarounds are off by default; the other settings below are on:
 | Settings > Phone Projection opens Device Connections | A hook in the Settings app (US/Canada) |
 | USB drives and hubs don't start wired Android Auto | A hook in the Android Auto app: a USB stick no longer blocks wireless Android Auto |
 | Allow wireless Android Auto through the hotspot firewall | **Off by default.** Experimental Ioniq 6 workaround: new IPv4 TCP connections on hotspot port 40515 |
-| Allow wireless CarPlay through the hotspot firewall | **Off by default.** Needed on the US Ioniq 6 260507: CarPlay's ports (TCP and UDP) and ICMPv6 from the hotspot |
+| Allow wireless CarPlay through the hotspot firewall | **Off by default.** Needed on the US Ioniq 6 260507 and the Elantra N (`CN7NPE`) 260903: CarPlay's ports (TCP and UDP, both ways), mDNS and ICMPv6 from the hotspot |
 
 HMG-API backs up modified files and restores their original bytes when the mod is
 removed. Native recipes verify the bytes at each patch site. The Ioniq 6 feature
@@ -47,6 +47,14 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | 260903 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless CarPlay and turn-by-turn (test build) | Canada | 260903 |
 | Kia Sportage Hybrid (`NQ5HEV`) — not yet tested on the car | USA | 260507 |
+| Hyundai Elantra N (`CN7NPE`) — owner confirmed wireless CarPlay and drive checks | USA | CN7NPE.USA.0000.V016.010.260903 |
+
+The CN7NPE owner confirmed wireless CarPlay connection/UI on November 16, 2026,
+and audio, Siri, calls, reconnect, navigation/cluster directions and stability
+checks during a drive on November 17, on a test build of this mod. This needs an
+enabled HMG-API hook map and the CarPlay firewall option enabled and saved.
+Android Auto and on-car rollback are not confirmed.
+See [CN7NPE setup](docs/cn7npe-usa-260903.md).
 
 The Canadian Ioniq 6 needs HMG-API's hook map for its build. On November 9, 2026, an
 owner confirmed wireless Android Auto and Google Maps directions on the dash there,

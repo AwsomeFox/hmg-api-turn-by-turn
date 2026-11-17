@@ -32,9 +32,9 @@ if op == "-N":
 elif key not in rules and not builtin:
     sys.exit(1)
 elif op == "-X":
-    # only a reference from the same IP version and table keeps a chain
-    if any("-j " + chain in value for k, value in rules.items()
-           if k.startswith(version + "/" + table + "/")):
+    if any(" -j " + chain + " " in " " + rule + " "
+           for rule_key, values in rules.items() if rule_key.startswith(version + "/" + table + "/")
+           for rule in values):
         sys.exit(1)
     del rules[key]
 elif op == "-F":
