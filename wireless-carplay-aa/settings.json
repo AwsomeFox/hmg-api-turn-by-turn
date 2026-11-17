@@ -56,6 +56,14 @@
       "description": "A hook in the Android Auto app (no files changed). Without it, a USB drive can block wireless Android Auto until the head unit restarts."
     },
     {
+      "key": "cp_firewall",
+      "type": "toggle",
+      "default": false,
+      "title": "Allow wireless CarPlay through the hotspot firewall",
+      "apply": "rebuild",
+      "description": "Experimental for CN7NPE USA 260903: allows CarPlay discovery, control and media traffic from the local hotspot, including IPv6 link-local traffic. HMG-API manages the rules and removes them when this setting or the mod is disabled. Leave off on cars that connect without it."
+    },
+    {
       "key": "aa_firewall",
       "type": "toggle",
       "default": false,

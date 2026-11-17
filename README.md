@@ -14,7 +14,7 @@ released from this repository.
 ## What it does
 
 Each part is a setting in the HMG-API app (pick the mod in its list for its settings).
-The firewall workaround is off by default; the other settings below are on:
+The firewall workarounds are off by default; the other settings below are on:
 
 | Setting | What |
 |---|---|
@@ -25,6 +25,7 @@ The firewall workaround is off by default; the other settings below are on:
 | Settings > Phone Projection opens Device Connections | A hook in the Settings app (US/Canada) |
 | USB drives and hubs don't start wired Android Auto | A hook in the Android Auto app: a USB stick no longer blocks wireless Android Auto |
 | Allow wireless Android Auto through the hotspot firewall | **Off by default.** Experimental Ioniq 6 workaround: new IPv4 TCP connections on hotspot port 40515 |
+| Allow wireless CarPlay through the hotspot firewall | **Off by default.** Experimental CN7NPE workaround: CarPlay ports and IPv6 neighbor discovery from the local hotspot |
 
 HMG-API backs up modified files and restores their original bytes when the mod is
 removed. Native recipes verify the bytes at each patch site. The Ioniq 6 feature
@@ -42,6 +43,14 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | CEEV.CAN.0000.V015.011.260206 |
 | Hyundai Ioniq 6 (`CEEV`), owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | CEEV.USA.0000.V016.010.260903 |
+| Hyundai Elantra N (`CN7NPE`) — owner confirmed wireless CarPlay and drive checks | USA | CN7NPE.USA.0000.V016.010.260903 |
+
+The CN7NPE owner confirmed wireless CarPlay connection/UI on November 16, 2026,
+and audio, Siri, calls, reconnect, navigation/cluster directions and stability
+checks during a drive on November 17, with private `2.2.0-rc.102`. This needs an
+enabled HMG-API hook map and the CarPlay firewall option enabled and saved.
+Android Auto and on-car rollback are not confirmed.
+See [CN7NPE setup](docs/cn7npe-usa-260903.md).
 
 The Ioniq 6 addition requires the matching HMG-API hook map. On November 9, 2026,
 the owner confirmed wireless Android Auto and Google Maps directions on the dash
