@@ -114,6 +114,12 @@
   "wifi": {
     "hotspot": true
   },
+  "car_events": {
+    "parked": {},
+    "unparked": {},
+    "shutdown": {},
+    "wake": {}
+  },
   "logs": {
     "tags": [
       "DiPO",
@@ -168,7 +174,8 @@
       "dipo.iap2_listener.notify": "replace",
       "dipo.session_listener.session_details": "observe",
       "dipo.iap2.bt_address": "change",
-      "dipo.bt.set_carplay_bt_address": "replace"
+      "dipo.bt.set_carplay_bt_address": "replace",
+      "gpm.receiver_service.on_create": "observe"
     },
     "native": {
       "libautoreceiver_infobank.so": [

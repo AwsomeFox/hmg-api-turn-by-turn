@@ -86,6 +86,13 @@ public final class Wireless extends ModEntry {
         if (IAP2.equals(app.packageName)) iap2(mod, app);
         if (GPM.equals(app.packageName) && mod.settingBoolean("usb_drives", true)) usbDrives(mod, app);
         if (GPM.equals(app.packageName) && mod.settingBoolean("tbt", true)) gpmTurnByTurn(mod, app);
+        if (GPM.equals(app.packageName) && mod.settingBoolean("park", true)) {
+            try {
+                Park.start(mod, app);
+            } catch (Throwable t) {   // an HMG-API without car events (NoSuchMethodError, NoClassDefFoundError)
+                mod.error("Android Auto: no teardown when you park", t);
+            }
+        }
         if (BTSETTINGS.equals(app.packageName) && mod.settingBoolean("menu", true)) phoneProjectionMenu(mod, app);
         if (DIPO.equals(app.packageName) && (mod.settingBoolean("tbt", true) || mod.settingBoolean("bridge", true) || mod.settingBoolean("audio", true))) dipo(mod, app);
     }
