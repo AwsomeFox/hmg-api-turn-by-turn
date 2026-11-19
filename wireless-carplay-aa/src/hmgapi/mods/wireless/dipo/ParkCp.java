@@ -42,7 +42,9 @@ final class ParkCp {
     static volatile Object service;
     static volatile boolean wireless, ended;
     static final int AP_ENABLED = 13;
-    static final long HOTSPOT_DELAY_MS = 3000;
+    /** after the hotspot is back, the car's own reconnect goes first: the mod only fills in */
+    static final long HOTSPOT_DELAY_MS = 15000;
+    static volatile android.content.ContentResolver cr;
 
     static void start(final ModContext mod, LoadedApp app) {
         for (String p : POINTS) {
@@ -73,6 +75,7 @@ final class ParkCp {
             }
         });
         final Handler main = new Handler(Looper.getMainLooper());
+        if (app.context != null) cr = app.context.getContentResolver();
         if (app.context != null) {
             app.context.registerReceiver(new BroadcastReceiver() {
                 @Override
@@ -123,6 +126,11 @@ final class ParkCp {
                     if (!ended) return;
                     ended = false;
                     if (wireless) return;   // the iPhone came back by itself
+                    if (cr != null && !Choice.allowedKind(cr, Choice.CARPLAY)) {   // an Android phone is chosen, or a session is starting
+                        mod.log("CarPlay: " + event + ": not advertising (" + (Choice.busy(cr) ? "a session is starting or on"
+                                : "the chosen phone is another: " + Choice.describe(cr)) + ")");
+                        return;
+                    }
                     Object r = Points.call(cl, "dipo.carplay.restart_bonjour", svc);
                     mod.log("CarPlay: " + event + ": advertising wireless CarPlay again (" + r + ")");
                 } catch (Throwable t) {

@@ -78,6 +78,11 @@ public final class Wireless extends ModEntry {
             @Override public void log(String message) { mod.log("CarPlay identity " + message); }
         });
         mod.publish(hmgapi.mods.wireless.api.CarPlayIdentification.SERVICE, identity);
+        try {
+            PpManager.zygote(mod);   // which phone projects: kept in system_server, read by the mod's automatic starts
+        } catch (Throwable t) {
+            mod.error("projection manager", t);
+        }
     }
 
     @Override

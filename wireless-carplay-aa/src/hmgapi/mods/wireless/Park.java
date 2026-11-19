@@ -50,7 +50,9 @@ final class Park {
     /** the phone of the wireless session that ended last, whoever ended it (null once asked back) */
     static volatile String lastPhone;
     static final int AP_ENABLED = 13;
-    static final long HOTSPOT_DELAY_MS = 5000;
+    /** after the hotspot is back, the car's own reconnect goes first: the mod only fills in */
+    static final long HOTSPOT_DELAY_MS = 15000;
+    static volatile android.content.ContentResolver cr;
 
     static void start(final ModContext mod, final LoadedApp app) {
         for (String p : POINTS) {
@@ -80,6 +82,7 @@ final class Park {
             });
         }
         final Handler main = new Handler(Looper.getMainLooper());
+        if (app.context != null) cr = app.context.getContentResolver();
         if (app.context != null) {
             app.context.registerReceiver(new BroadcastReceiver() {
                 @Override
@@ -145,6 +148,12 @@ final class Park {
                     if (ended == null) return;
                     if (wirelessPhone(cl, svc) != null) {   // the phone came back by itself
                         ended = null;
+                        return;
+                    }
+                    if (cr != null && !Choice.allowed(cr, Choice.ANDROID_AUTO, phone)) {   // another phone is chosen, or one is starting
+                        ended = null;
+                        mod.log("Android Auto: " + event + ": not asking " + phone + " back (" + (Choice.busy(cr) ? "a session is starting or on"
+                                : "the chosen phone is another: " + Choice.describe(cr)) + ")");
                         return;
                     }
                     Points.call(cl, "gpm.receiver_service.connect_wireless_session", svc, phone);
