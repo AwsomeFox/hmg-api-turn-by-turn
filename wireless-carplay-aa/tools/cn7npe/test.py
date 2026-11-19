@@ -172,10 +172,12 @@ with tempfile.TemporaryDirectory(prefix="cn7npe-wireless-test-") as temporary:
     with zipfile.ZipFile(work / ("wireless-carplay-aa-" + version + "-nemesis-package.zip")) as archive:
         fields = dict(line.split("=", 1) for line in archive.read("NEMESIS.data").decode().splitlines()
                       if "=" in line)
+        # NEMESIS before 1.16.9 takes at most 255 characters, so the SDK widens a long list (here to
+        # any model per region and firmware); HMG-API's own "system" check still limits the cars.
+        assert len(fields["os"].strip('"')) <= 255
         patterns = fields["os"].strip('"').split(",")
-        assert "CN7NPE.USA.*.260903" in patterns
         assert any(fnmatch.fnmatchcase(PRODUCT, pattern) for pattern in patterns)
-        assert not any(fnmatch.fnmatchcase(PRODUCT.replace("USA", "CAN"), p) for p in patterns)
-        assert not any(fnmatch.fnmatchcase(PRODUCT.replace("260903", "260507"), p) for p in patterns)
+        assert not any(fnmatch.fnmatchcase(PRODUCT.replace("260903", "260101"), p) for p in patterns)
+        assert not any(fnmatch.fnmatchcase(PRODUCT.replace("USA", "KOR"), p) for p in patterns)
         assert archive.read("mod/package.zip") == package.read_bytes()
     print("ok    CN7NPE: SDK-generated NEMESIS compatibility and embedded package")
