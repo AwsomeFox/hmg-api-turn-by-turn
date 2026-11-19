@@ -120,7 +120,9 @@ class Firewall:
         write(self.bin / "getprop", "#!/bin/sh\necho stopped\n")
         # Unexpected route changes must be visible even if the keeper ignores
         # a command's failure. Never let it fall through to a host command.
-        write(self.bin / "ip", '#!/bin/sh\necho unexpected > "$FW/unexpected-ip"\nexit 99\n')
+        # HMG-API's keeper also clears its own home Wi-Fi rule (ip rule del priority 900; none here).
+        write(self.bin / "ip", '#!/bin/sh\n[ "$*" = "rule del priority 900" ] && exit 2\n'
+                               'echo "$*" >> "$FW/unexpected-ip"\nexit 99\n')
         for name in ("getprop", "ip"):
             (self.bin / name).chmod(0o755)
         write(self.root / "proc/net/ipv4/ip_forward", "0\n")
@@ -147,7 +149,17 @@ class Firewall:
         return result.stdout
 
     def read(self):
-        return json.loads((self.root / "rules.json").read_text())
+        """The rules, less HMG-API's own that keep mods off cellular (the HMGAPI_CELL chain, first in
+        OUTPUT): the keeper adds those whatever this mod asks, so they aren't this mod's to check."""
+        rules = json.loads((self.root / "rules.json").read_text())
+        for family in ("4", "6"):
+            rules.pop(family + "/filter/HMGAPI_CELL", None)
+            out = family + "/filter/OUTPUT"
+            if out in rules:
+                rules[out] = [r for r in rules[out] if r != "-j HMGAPI_CELL"]
+                if not rules[out] and out not in getattr(self, "before", {}):
+                    del rules[out]
+        return rules
 
     def once(self):
         result = subprocess.run(["bash", str(self.unit.data / "state/net.sh"), "once"],
@@ -184,8 +196,8 @@ def transaction_and_network(temp, sdk):
         require(f'<feature name="{feature}" />' in path.read_text(), "wireless feature is installed: " + feature)
     require("prop/persist.ium.support=carplay" in (unit.root / "settings.txt").read_text(),
             "projection property is applied")
-    require(not unit.state("net.rules") and "hmgapi net " not in unit.state("services.txt"),
-            "default settings create no firewall rule or keeper")
+    # The keeper itself runs anyway: HMG-API keeps mods off cellular (its own HMGAPI_CELL chain).
+    require(not unit.state("net.rules"), "default settings create no firewall rule")
 
     unit.settings(aa_firewall=True)
     plan = unit.engine("plan")
@@ -211,7 +223,8 @@ def transaction_and_network(temp, sdk):
     fw.once()
     fw.restored()
     unit.engine("publish-state")
-    require("hmgapi net " not in unit.state("services.txt"), "keeper stops after cleanup")
+    # The keeper stays (HMG-API's own cellular block); none of this mod's rules do.
+    require(not unit.state("net.rules"), "no firewall rule left after cleanup")
 
     unit.settings(aa_firewall=True)
     unit.engine("apply")
@@ -274,7 +287,7 @@ def existing_car_defaults(temp, sdk):
         unit = Unit(temp / product, sdk, product)
         unit.engine("plan")
         unit.engine("publish-state")
-        require(not unit.state("net.rules") and "hmgapi net " not in unit.state("services.txt"),
+        require(not unit.state("net.rules"),
                 "existing model stays accepted with no default firewall rule: " + product)
 
 
