@@ -42,6 +42,7 @@ in-memory patches; disk changes appear in the app's plan.
 | Hyundai Ioniq 5 (`NEEV`, `NEEV23`, `NEEV23SE`) | USA | 260903 |
 | Kia EV6 (`CVEV`) | Canada | 260206 |
 | Hyundai Ioniq 5 (`NEEV`) | Canada | 260206 |
+| Hyundai Ioniq 5 (`NEEV`), same files as the US 260903 build | Canada | 260903 |
 | Hyundai Ioniq 6 (`CEEV`) | USA | 260507 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless AA and dash TBT | Canada | 260206 |
 | Hyundai Ioniq 6 (`CEEV`) — owner confirmed wireless CarPlay with the CarPlay firewall setting on | USA | 260903 |
