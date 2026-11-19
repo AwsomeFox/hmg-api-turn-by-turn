@@ -141,7 +141,7 @@ with tempfile.TemporaryDirectory(prefix="cn7npe-wireless-test-") as temporary:
     print("ok    CN7NPE: plan, apply, repeat apply and byte-identical restore")
 
     for product in (PRODUCT.replace("USA", "CAN"), PRODUCT.replace("260903", "260507"),
-                    PRODUCT.replace("V016.010", "V016.011"), PRODUCT.replace("CN7NPE", "CN7")):
+                    PRODUCT.replace("V016.010", "V016.011"), PRODUCT.replace("CN7NPE", "CN7N")):
         output = engine(root, "apply", product=product, expected=3)
         assert "nothing changed" in output
         assert snapshot(root / "system") == before
