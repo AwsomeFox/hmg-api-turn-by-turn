@@ -267,7 +267,8 @@ def existing_car_defaults(temp, sdk):
     for product in ("CVEV.USA.0000.V015.012.260507", "NEEV.USA.0000.V015.012.260507",
                     "NEEV23.USA.0000.V015.012.260507", "NEEV23SE.USA.0000.V015.012.260507",
                     "NEEV.USA.0000.V015.012.260903", "NEEV23.USA.0000.V015.012.260903",
-                    "NEEV23SE.USA.0000.V015.012.260903", "CVEV.CAN.0000.V015.011.260206",
+                    "NEEV23SE.USA.0000.V015.012.260903", "NEEV.CAN.0000.V016.010.260903",
+                    "CVEV.CAN.0000.V015.011.260206",
                     "NEEV.CAN.0000.V015.011.260206", "CEEV.USA.0000.V015.012.260507",
                     "NQ5HEV.USA.0000.V015.012.260507"):
         unit = Unit(temp / product, sdk, product)

@@ -47,6 +47,14 @@
       ]
     },
     {
+      "model": "NEEV",
+      "region": "CAN",
+      "firmware": "260903",
+      "features": [
+        "hmgapi.wifi"
+      ]
+    },
+    {
       "model": [
         "CVEV",
         "NEEV"
