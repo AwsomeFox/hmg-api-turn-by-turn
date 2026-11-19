@@ -1,5 +1,9 @@
 package hmgapi.mods.wireless;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -22,6 +26,12 @@ import java.util.concurrent.TimeUnit;
  * QuickBoot suspend), GPM starts wireless Android Auto again with the same phone
  * (GalReceiverService.connectWirelessSession, what Phone Projection's connect does).
  *
+ * The car's hotspot coming back (Android's WIFI_AP_STATE_CHANGED, enabled) asks the phone back
+ * too: the stock apps already end the session when the car is switched off, and HMG-API's home
+ * Wi-Fi turns the hotspot off while the car is off (or on request), so the phone of the last
+ * wireless session (GalReceiverService.disconnected) is asked back once the hotspot is up again,
+ * whatever ended it, unless it came back by itself.
+ *
  * A wired session is never ended. GPM's service is GalReceiverService (its onCreate gives the
  * instance); the phone on wireless Android Auto is its WirelessExplorer's connected device.
  */
@@ -37,6 +47,10 @@ final class Park {
     static volatile Object service;
     /** the phone whose session this ended (its Bluetooth address), until it's brought back */
     static volatile String ended;
+    /** the phone of the wireless session that ended last, whoever ended it (null once asked back) */
+    static volatile String lastPhone;
+    static final int AP_ENABLED = 13;
+    static final long HOTSPOT_DELAY_MS = 5000;
 
     static void start(final ModContext mod, final LoadedApp app) {
         for (String p : POINTS) {
@@ -52,7 +66,31 @@ final class Park {
                 service = p.thisObject;
             }
         });
+        if (Points.has("gpm.receiver_service.disconnected")) {
+            mod.hook(cl, "gpm.receiver_service.disconnected", new MethodHook() {
+                @Override
+                protected void beforeHookedMethod(Param p) {
+                    try {
+                        String phone = wirelessPhone(cl, p.thisObject);
+                        if (phone != null) lastPhone = phone;
+                    } catch (Throwable t) {
+                        mod.error("Android Auto: the phone of the session that ended", t);
+                    }
+                }
+            });
+        }
         final Handler main = new Handler(Looper.getMainLooper());
+        if (app.context != null) {
+            app.context.registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context c, Intent i) {
+                    if (i.getIntExtra("wifi_state", -1) != AP_ENABLED) return;
+                    if (ended == null) ended = lastPhone;
+                    lastPhone = null;
+                    back(mod, cl, main, "the car's hotspot back", HOTSPOT_DELAY_MS);
+                }
+            }, new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGED"));
+        }
         mod.onCarEvent(app, new CarEvents.Listener() {
             @Override
             public void onCarEvent(String event) {
@@ -61,7 +99,7 @@ final class Park {
                 else if (CarEvents.WAKE.equals(event)) back(mod, cl, main, event, WAKE_DELAY_MS);
             }
         });
-        mod.log("Android Auto: ends its wireless session when you park and leave, back when the car is on again");
+        mod.log("Android Auto: ends its wireless session when you park and leave, asks the phone back when the car is on or its hotspot is back");
     }
 
     /** the phone on wireless Android Auto now, or null */

@@ -1,5 +1,9 @@
 package hmgapi.mods.wireless.dipo;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -20,6 +24,10 @@ import java.util.concurrent.TimeUnit;
  * so at "unparked" and "wake" the mod advertises it again (CarPlayService.restartBonjour) and
  * the iPhone can come back. A USB session is never ended.
  *
+ * The car's hotspot coming back (WIFI_AP_STATE_CHANGED, enabled) advertises CarPlay again too,
+ * after any wireless session that ended (the stock apps end it when the car is switched off, and
+ * HMG-API's home Wi-Fi turns the hotspot off meanwhile), so the iPhone can rejoin.
+ *
  * CarPlayService's instance and the session's transport come from its own callbacks
  * (onSessionCreated, onSessionStarted(1 wireless), onSessionFinalized).
  */
@@ -33,6 +41,8 @@ final class ParkCp {
 
     static volatile Object service;
     static volatile boolean wireless, ended;
+    static final int AP_ENABLED = 13;
+    static final long HOTSPOT_DELAY_MS = 3000;
 
     static void start(final ModContext mod, LoadedApp app) {
         for (String p : POINTS) {
@@ -58,10 +68,19 @@ final class ParkCp {
         mod.hook(cl, "dipo.carplay.session_finalized", new MethodHook() {
             @Override
             protected void afterHookedMethod(Param p) {
+                if (wireless) ended = true;   // whoever ended it: advertise again when the hotspot is back
                 wireless = false;
             }
         });
         final Handler main = new Handler(Looper.getMainLooper());
+        if (app.context != null) {
+            app.context.registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context c, Intent i) {
+                    if (i.getIntExtra("wifi_state", -1) == AP_ENABLED) back(mod, cl, main, "the car's hotspot back", HOTSPOT_DELAY_MS);
+                }
+            }, new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGED"));
+        }
         mod.onCarEvent(app, new CarEvents.Listener() {
             @Override
             public void onCarEvent(String event) {

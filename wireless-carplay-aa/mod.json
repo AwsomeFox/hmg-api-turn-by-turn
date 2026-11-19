@@ -175,7 +175,8 @@
       "dipo.session_listener.session_details": "observe",
       "dipo.iap2.bt_address": "change",
       "dipo.bt.set_carplay_bt_address": "replace",
-      "gpm.receiver_service.on_create": "observe"
+      "gpm.receiver_service.on_create": "observe",
+      "gpm.receiver_service.disconnected": "observe"
     },
     "native": {
       "libautoreceiver_infobank.so": [
