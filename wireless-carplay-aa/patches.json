@@ -12,6 +12,8 @@
     "CEEV.USA.0000.V016.010.260903": "ceev_us",
     "CEEV.CAN.0000.V016.010.260903": "ceev_ca_260903",
     "NQ5HEV.USA.": "nq5",
+    "DL3.USA.": "kmc",
+    "DL322.USA.": "kmc",
     "CN7NPE.USA.0000.V016.010.260903": "cn7npe_us",
     "AEPEEV.USA.": "hmc",
     "AEPEEV.CAN.": "hmc",
@@ -96,6 +98,12 @@
       "type": "add",
       "path": "/system/lib/libcarplayidentity.so",
       "src": "files/libcarplayidentity.so",
+      "mode": "644"
+    },
+    {
+      "type": "add",
+      "path": "/system/lib/libcarplaylog.so",
+      "src": "files/libcarplaylog.so",
       "mode": "644"
     }
   ]
