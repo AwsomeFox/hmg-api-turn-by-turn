@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import hmgapi.hook.Points;
+import hmgapi.hook.Wifi;
 
 /**
  * Wireless CarPlay's Bluetooth bridge, in DiPO (from the bridge build, com.ev6.cpwl).
@@ -217,6 +218,8 @@ final class Bridge {
                         sSession = false;
                         return;
                     }
+                    // the projection AP for the iPhone to join: HMG-API's (the car may have turned it off since boot)
+                    Wifi.projectionAp(c, "wireless-carplay-aa");
                     Intent i = new Intent(ACTION_ATTACH);
                     i.setPackage(IAP2_PKG);
                     i.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
