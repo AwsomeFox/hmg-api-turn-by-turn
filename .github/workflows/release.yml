@@ -31,7 +31,7 @@ jobs:
 
   ci:
     needs: version
-    uses: Open-HMG/HMG-API/.github/workflows/mod.yml@2df7c01d1f95ba9c31763c5841adeac616d94e66
+    uses: Open-HMG/HMG-API/.github/workflows/mod.yml@2f78351309cb8deb95c64ec58546c40ace78e7a3
 
   release:
     needs: ci
