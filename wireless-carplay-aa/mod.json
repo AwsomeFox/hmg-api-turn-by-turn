@@ -339,6 +339,43 @@
       "features": [
         "hmgapi.wifi"
       ]
+    },
+    {
+      "model": "CEEV",
+      "region": "USA",
+      "firmware": "260206",
+      "features": [
+        "hmgapi.wifi"
+      ]
+    },
+    {
+      "model": "CN7PE",
+      "region": "USA",
+      "firmware": "260507",
+      "features": [
+        "hmgapi.wifi"
+      ]
+    },
+    {
+      "model": [
+        "BDPE",
+        "KA4",
+        "NQ5",
+        "NQ5HEV",
+        "NQ5PHEV",
+        "ONPE",
+        "SG2EV",
+        "SG2HEV",
+        "SG2PHEV",
+        "SK3EPE",
+        "SK3PE",
+        "SP2PE"
+      ],
+      "region": "CAN",
+      "firmware": "260206",
+      "features": [
+        "hmgapi.wifi"
+      ]
     }
   ],
   "parts": [
