@@ -312,7 +312,8 @@
       "dipo.iap2_listener.notify": "replace",
       "dipo.session_listener.session_details": "observe",
       "dipo.iap2.bt_address": "change",
-      "dipo.bt.set_carplay_bt_address": "replace"
+      "dipo.bt.set_carplay_bt_address": "replace",
+      "framework.activity.start_activity_for_result": "change"
     },
     "native": {
       "libautoreceiver_infobank.so": [
