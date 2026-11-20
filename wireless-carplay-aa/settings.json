@@ -86,6 +86,14 @@
       "title": "Allow wireless CarPlay through the hotspot firewall",
       "apply": "rebuild",
       "description": "Needed on the Ioniq 6 USA 260507 and the Elantra N (CN7NPE) USA 260903, whose stock firewalls allow the CarPlay ports only on the wired link. Accepts CarPlay's ports from the hotspot's own addresses, TCP and UDP, as destination or source: 5000-5001, 5020, 5353, 6000-6003, 6011, 6020, 6030 and 7000 on IPv4 and IPv6, 6031 on IPv6, and ICMPv6 (neighbor discovery). HMG-API manages the rules and removes them when this setting or the mod is disabled. Leave off on cars that connect without it."
+    },
+    {
+      "key": "carplay_log",
+      "type": "toggle",
+      "default": false,
+      "title": "CarPlay's own log (troubleshooting)",
+      "apply": "restart",
+      "description": "For finding out why wireless CarPlay disconnects: the CarPlay system logs each session in detail (as TccCarPlay), so Record a problem or a log capture shows why it ended. Its lines name your phone (model and name). Leave it off unless someone helping you asks for it. Takes effect when the head unit restarts."
     }
   ]
 }
