@@ -267,7 +267,7 @@ def transaction_and_network(temp, sdk):
 
 
 def ceev_can_firmwares(temp, sdk):
-    for product in (PRODUCT, "CEEV.CAN.0000.V016.010.260903"):
+    for product in (PRODUCT, "CEEV.USA.0000.V015.011.260206", "CEEV.CAN.0000.V016.010.260903"):
         unit = Unit(temp / product, sdk, product)
         before = snapshot(unit.root / "system")
         unit.engine("apply")
@@ -318,7 +318,7 @@ def carplay_firewall(temp, sdk):
 
 
 def rejected_units(temp, sdk):
-    for product in ("CEEV.USA.0000.V015.011.260206", "CEEV.CAN.0000.V015.011.250818",
+    for product in ("CEEV.USA.0000.V015.011.250818", "CEEV.CAN.0000.V015.011.250818",
                     "CEEV.CAN.0000.V015.012.260206", "CEEV.CAN.0000.V015.011.260903"):
         unit = Unit(temp / product, sdk, product)
         before = snapshot(unit.root / "system")
