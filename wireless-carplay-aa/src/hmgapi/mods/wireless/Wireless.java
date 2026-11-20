@@ -64,11 +64,12 @@ public final class Wireless extends ModEntry {
     static final String BTSETTINGS = "com.android.btsettings";
     static final String SYSTEM_POPUP = "com.mobis.system";
     /** what the popup's Settings button opens with the wireless features on: not on US/Canadian builds */
-    static final ComponentName INTEGRATED_SETTINGS = new ComponentName("com.daudio.app.deviceconnections",
-            "com.daudio.app.deviceconnections.ui.connectivitySettings.PhoneProjectionSettingsActivity");
-    /** what it opens with them off: Phone Projection's Device Connections page, on every build */
-    static final ComponentName PROJECTION_SETTINGS = new ComponentName("com.daudio.app.phoneprojection",
-            "com.daudio.app.phoneprojection.settings.ui.DeviceConnectionSettings");
+    static final String INTEGRATED_PKG = "com.daudio.app.deviceconnections",
+            INTEGRATED_CLASS = "com.daudio.app.deviceconnections.ui.connectivitySettings.PhoneProjectionSettingsActivity";
+    /** what it opens with them off: Phone Projection's Device Connections page, on every build.
+     *  Names, not ComponentNames: a static ComponentName would run Android code when the class loads */
+    static final String PROJECTION_PKG = "com.daudio.app.phoneprojection",
+            PROJECTION_CLASS = "com.daudio.app.phoneprojection.settings.ui.DeviceConnectionSettings";
     static final String GPM = "com.google.android.projection.sink";
     static final String GAL_SERVICE = "com.google.android.projection.service.GalReceiverService";
     static final int USB_CLASS_MASS_STORAGE = 8, USB_CLASS_HUB = 9;
@@ -379,10 +380,11 @@ public final class Wireless extends ModEntry {
             @Override
             protected void beforeHookedMethod(Param p) {
                 Intent i = (Intent) p.args[0];
-                if (i == null || !INTEGRATED_SETTINGS.equals(i.getComponent())) return;
+                ComponentName to = i == null ? null : i.getComponent();
+                if (to == null || !INTEGRATED_PKG.equals(to.getPackageName()) || !INTEGRATED_CLASS.equals(to.getClassName())) return;
                 Context c = (Context) p.thisObject;
                 if (c.getPackageManager().resolveActivity(i, 0) != null) return;   // a build with that app: as stock
-                i.setComponent(PROJECTION_SETTINGS);
+                i.setClassName(PROJECTION_PKG, PROJECTION_CLASS);
                 mod.log("Phone Projection: the car's popup opens Phone Projection's settings (no Device Connections app on this build)");
             }
         });
