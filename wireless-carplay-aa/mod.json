@@ -402,6 +402,12 @@
   "wifi": {
     "hotspot": true
   },
+  "car_events": {
+    "parked": {},
+    "unparked": {},
+    "shutdown": {},
+    "wake": {}
+  },
   "logs": {
     "tags": [
       "DiPO",
@@ -457,6 +463,14 @@
       "dipo.session_listener.session_details": "observe",
       "dipo.iap2.bt_address": "change",
       "dipo.bt.set_carplay_bt_address": "replace",
+      "gpm.receiver_service.on_create": "observe",
+      "gpm.receiver_service.disconnected": "observe",
+      "framework.pp_service.connect_pp": "observe",
+      "framework.pp_service.send_connect_pp_from_bt": "observe",
+      "framework.pp_service.disconnect_pp": "observe",
+      "framework.pp_service.cancel_connection_pp": "observe",
+      "framework.pp_service.on_wireless_connected": "observe",
+      "framework.pp_service.on_wireless_disconnected": "observe",
       "framework.activity.start_activity_for_result": "change"
     },
     "native": {

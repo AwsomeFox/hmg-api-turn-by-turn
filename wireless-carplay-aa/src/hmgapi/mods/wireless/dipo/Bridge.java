@@ -199,6 +199,12 @@ final class Bridge {
 
     static void onSppUp(final String addr) {
         if (addr == null || sSession) return;
+        Context cx = context;
+        if (cx != null && !Choice.allowed(cx.getContentResolver(), Choice.CARPLAY, addr)) {   // the projection manager: another phone is chosen, or one is on
+            log("iPhone " + addr + " on Bluetooth: not starting CarPlay (" + (Choice.busy(cx.getContentResolver()) ? "a session is starting or on"
+                    : "the chosen phone is another: " + Choice.describe(cx.getContentResolver())) + ")");
+            return;
+        }
         sAddr = addr;
         if (sCpClient || sCpWireless || !enabled() || sUsb) return;
         sSession = true;
