@@ -309,6 +309,15 @@ public final class CpTurnsTest {
                 "2c 2 5 0 0 0 0 0 0 0");
         t.maneuver(maneuver(0, 2, 0, 0, 90, "First St", 700));
         expect("later details of a maneuver already sent: nothing extra (the next route update sends them)");
+
+        // after a reset (another app, a disconnect) a no-icon maneuver at the same index and type
+        // still clears what the old route left on the main display
+        t.reset();
+        t.maneuver(maneuver(0, 2, 0, 1, 77, "Circle", 300));   // a roundabout angle with no icon
+        c.calls.clear();
+        t.routeGuidance(msg(0, U16, i(1), 1, ENUM, i(1), 11, STR, s("300"), 12, ENUM, i(4), 13, U16, i(0)));
+        check("after a reset, a no-icon maneuver at the old index clears the old turn: " + c.calls,
+                c.calls.contains("tbt 0 0 0.0 0.0 -1 0 0 0 -1"));
     }
 
     static boolean is(int[] got, int type, int dir, int bar) {

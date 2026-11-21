@@ -294,6 +294,10 @@ final class CpTurns {
             if (u != null) u.clear();
         }
         waiting.clear();
+        // what's shown stays (reset doesn't clear the main display), but no maneuver is the
+        // shown one any more: the next maneuver with no icon clears it, even at the same index
+        shownIndex = -1;
+        shownType = -1;
     }
 
     /** SourceName (item 19) changed: clear the old app's leftovers and have the phone resend */
