@@ -1,6 +1,7 @@
 /* navigraph's JNI side, for hmgapi.mods.wireless.NaviGraph (in com.mnsoft.navi).
  * Symbols come only from the engine already loaded in this process (dlsym with
- * RTLD_DEFAULT, no dlopen), and each must belong to libExSLNavi.so (dladdr).
+ * RTLD_DEFAULT, no dlopen; weak ones from the engine's own symbol table, which 4.4's dlsym
+ * skips), and each must belong to libExSLNavi.so (dladdr).
  * Adapted from ch0iiih/HMG_Phone_Projection_TBT navigation-api/native (AGPL-3.0). */
 #include <jni.h>
 #include "navigraph.c"
@@ -24,9 +25,24 @@ static int ends_with(const char *s, const char *tail) {
     return a == s || a[-1] == '/';
 }
 
+/* where the engine is mapped (its ELF header), for the weak symbols dlsym won't return */
+static const u8 *engine_base;
+
+/* for the host test: a weak symbol in this library itself */
+__attribute__((weak, visibility("default"))) int navigraph_weak_probe(void) { return 7; }
+
 static void *find(const char *name) {
     void *p = dlsym((void *)(uptr)0xffffffffu, name);   /* RTLD_DEFAULT on 32-bit bionic */
-    if (!p) return 0;
+    if (!p) {
+        /* Android 4.4's dlsym skips STB_WEAK: look in the engine's own symbol table */
+        if (!engine_base) {
+            void *g = dlsym((void *)(uptr)0xffffffffu, "_ZN17CLifecycleManager12NewComponentEt");
+            struct dl_info gi; zero(&gi, sizeof(gi));
+            if (g && dladdr(g, &gi) && ends_with(gi.file, "libExSLNavi.so")) engine_base = (const u8 *)gi.base;
+        }
+        if (engine_base) p = navigraph_elf_lookup(engine_base, name);
+        if (!p) return 0;
+    }
     struct dl_info info; zero(&info, sizeof(info));
     if (!dladdr(p, &info) || !ends_with(info.file, "libExSLNavi.so")) { refused = name; return 0; }
     return p;
