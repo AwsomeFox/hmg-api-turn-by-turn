@@ -4,7 +4,30 @@
  * made is destroyed. Adapted from ch0iiih's test_stock_graph_probe.c (AGPL-3.0). */
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../../native/navigraph/navigraph.c"
+
+/* an ELF32 library laid out as the loader maps it (each PT_LOAD at its vaddr) */
+static u8 *map_elf(const char *path) {
+    FILE *f = fopen(path, "rb");
+    if (!f) return 0;
+    fseek(f, 0, SEEK_END); long n = ftell(f); fseek(f, 0, SEEK_SET);
+    u8 *file = malloc((size_t)n);
+    assert(fread(file, 1, (size_t)n, f) == (size_t)n);
+    fclose(f);
+    const struct elf32_ehdr *eh = (const struct elf32_ehdr *)file;
+    const struct elf32_phdr *ph = (const struct elf32_phdr *)(file + eh->phoff);
+    u32 top = 0;
+    for (u32 i = 0; i < eh->phnum; i++) if (ph[i].type == 1 && ph[i].vaddr + ph[i].memsz > top) top = ph[i].vaddr + ph[i].memsz;
+    u8 *image = calloc(1, top + 4096);
+    for (u32 i = 0; i < eh->phnum; i++) if (ph[i].type == 1) memcpy(image + ph[i].vaddr, file + ph[i].offset, ph[i].filesz);
+    free(file);
+    return image;
+}
+
+static const u8 *engine_image;
+static void *elf_find(const char *name) { return navigraph_elf_lookup(engine_image, name); }
 
 #define MODULE 0x9550
 static int mode, components, positions, entities, nodes, arrays, point_arrays;
@@ -91,8 +114,30 @@ static int same(const char *a, const char *b) {
 
 static int clean(void) { return !components && !positions && !entities && !nodes && !arrays && !point_arrays; }
 
-int main(void) {
+int main(int argc, char **argv) {
     struct api a;
+    if (argc > 1) {
+        /* our own library (ARM ELF32): a global and a weak symbol, by the loaded image's symbol table */
+        u8 *own = map_elf(argv[1]);
+        assert(own);
+        void *jni = navigraph_elf_lookup(own, "Java_hmgapi_mods_wireless_NaviGraph_nativeBind");
+        void *weak = navigraph_elf_lookup(own, "navigraph_weak_probe");
+        assert(jni && ((uptr)jni & 1) && weak && ((uptr)weak & 1));
+        assert(!navigraph_elf_lookup(own, "navigraph_no_such_symbol") && !navigraph_elf_lookup(own, "dlsym"));
+        static u8 junk[4096];
+        assert(!navigraph_elf_lookup(junk, "navigraph_weak_probe") && !navigraph_elf_lookup(0, "x"));
+        puts("ok    elf lookup: a global and a weak (STB_WEAK) symbol by name, Thumb bit kept; absent, undefined, not ELF: none");
+        free(own);
+    }
+    if (argc > 2) {
+        /* the car's engine (a private stock file): every one of the 28, the two weak mArray clears too */
+        u8 *eng = map_elf(argv[2]);
+        assert(eng);
+        engine_image = eng;
+        assert(navigraph_bind(&a, elf_find, MODULE) == 0);
+        puts("ok    elf lookup on the engine given: all 28 functions bound, mArray<stConnectLink>::clear and mArray<mLonLat_t>::clear (weak) included");
+        free(eng);
+    }
     component[0] = vtable; vtable[0x20 / sizeof(void *)] = (void *)get_info;
     *(u64 *)(edges + 0) = 100; *(u64 *)(edges + 8) = 8;
     *(u64 *)(edges + 0x58) = 100; *(u64 *)(edges + 0x60) = 9;

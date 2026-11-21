@@ -96,6 +96,83 @@ int navigraph_bind(struct api *a, resolver find, u16 module) {
     return 0;
 }
 
+/* ---- weak symbols: the head unit's bionic (Android 4.4) dlsym returns only STB_GLOBAL symbols,
+ * and two of the engine's functions are template instances, STB_WEAK
+ * (_ZN6mArrayI13stConnectLinkE5clearEv, _ZN6mArrayI9mLonLat_tIiEE5clearEv: "engine ... lacks
+ * _ZN6mArrayI13stConnectLinkE5clearEv" on a US Ioniq 5, 2026-11-21, though the file exports it).
+ * navigraph_elf_lookup reads the loaded engine's own dynamic symbol table (DT_HASH, DT_SYMTAB,
+ * DT_STRTAB, as the 4.4 linker itself does) and takes a defined global or weak symbol. */
+struct elf32_ehdr { u8 ident[16]; u16 type, machine; u32 version, entry, phoff, shoff, flags;
+                    u16 ehsize, phentsize, phnum, shentsize, shnum, shstrndx; };
+struct elf32_phdr { u32 type, offset, vaddr, paddr, filesz, memsz, flags, align; };
+struct elf32_dyn { int tag; u32 val; };
+struct elf32_sym { u32 name, value, size; u8 info, other; u16 shndx; };
+
+static u32 elf_hash(const char *s) {
+    u32 h = 0, g;
+    while (*s) {
+        h = (h << 4) + (u8)*s++;
+        g = h & 0xf0000000u;
+        if (g) h ^= g >> 24;
+        h &= ~g;
+    }
+    return h;
+}
+
+/* n % d without libgcc's __aeabi_uidivmod (no libc here; ARMv7-A has no divide instruction) */
+static u32 umod32(u32 n, u32 d) {
+    u32 r = 0;
+    for (int i = 31; i >= 0; i--) {
+        r = (r << 1) | ((n >> i) & 1);
+        if (r >= d) r -= d;
+    }
+    return r;
+}
+
+static int same_name(const char *a, const char *b, u32 limit) {
+    while (limit-- && *a && *a == *b) { a++; b++; }
+    return *a == *b;
+}
+
+/* a defined STB_GLOBAL or STB_WEAK symbol of the ELF32 library mapped with its first page
+ * (ELF and program headers) at base; 0 if it isn't there */
+void *navigraph_elf_lookup(const u8 *base, const char *name) {
+    if (!base || !name) return 0;
+    const struct elf32_ehdr *eh = (const struct elf32_ehdr *)base;
+    if (eh->ident[0] != 0x7f || eh->ident[1] != 'E' || eh->ident[2] != 'L' || eh->ident[3] != 'F' || eh->ident[4] != 1) return 0;
+    if (eh->phentsize != sizeof(struct elf32_phdr) || eh->phnum == 0 || eh->phnum > 64 || eh->phoff > 4096) return 0;
+    const struct elf32_phdr *ph = (const struct elf32_phdr *)(base + eh->phoff);
+    u32 min = ~0u;
+    const struct elf32_phdr *dyn = 0;
+    for (u32 i = 0; i < eh->phnum; i++) {
+        if (ph[i].type == 1 && (ph[i].vaddr & ~0xfffu) < min) min = ph[i].vaddr & ~0xfffu;   /* PT_LOAD */
+        if (ph[i].type == 2) dyn = ph + i;                                                       /* PT_DYNAMIC */
+    }
+    if (!dyn || min == ~0u) return 0;
+    const u8 *bias = base - min;
+    const struct elf32_dyn *d = (const struct elf32_dyn *)(bias + dyn->vaddr);
+    const u32 *hash = 0;
+    const struct elf32_sym *syms = 0;
+    const char *strs = 0;
+    for (u32 i = 0; i < 512 && d[i].tag != 0; i++) {
+        if (d[i].tag == 4) hash = (const u32 *)(bias + d[i].val);                     /* DT_HASH */
+        else if (d[i].tag == 5) strs = (const char *)(bias + d[i].val);               /* DT_STRTAB */
+        else if (d[i].tag == 6) syms = (const struct elf32_sym *)(bias + d[i].val);   /* DT_SYMTAB */
+    }
+    if (!hash || !syms || !strs) return 0;
+    u32 nbucket = hash[0], nchain = hash[1];
+    if (!nbucket || nbucket > (1u << 20) || nchain > (1u << 22)) return 0;
+    const u32 *bucket = hash + 2, *chain = bucket + nbucket;
+    u32 steps = 0;
+    for (u32 i = bucket[umod32(elf_hash(name), nbucket)]; i && i < nchain && steps < nchain; i = chain[i], steps++) {
+        const struct elf32_sym *sym = syms + i;
+        u32 bind = sym->info >> 4;
+        if ((bind == 1 || bind == 2) && sym->shndx != 0 && sym->value && same_name(strs + sym->name, name, 4096))
+            return (void *)(bias + sym->value);
+    }
+    return 0;
+}
+
 /* the map-matched link and the links the car can go on to from it */
 int navigraph_current(struct api *a, struct snapshot *out) {
     if (!a || !out) return -1;

@@ -97,6 +97,12 @@ bytes, to compare builds across cars.
 - All 28 symbols the helper binds are exported, the geometry functions are the same size
   as on the Korean builds, and the two weak `mArray::clear` symbols are exported, so no
   address anchor or fixed-offset fallback is needed.
+- But the head unit's Android 4.4 `dlsym` returns only `STB_GLOBAL` symbols, so on the car
+  those two came back missing ("lacks `_ZN6mArrayI13stConnectLinkE5clearEv`", 2026-11-21).
+  `navigraph_elf_lookup` now finds them in the loaded engine's own dynamic symbol table
+  (`DT_HASH`, `DT_SYMTAB`, `DT_STRTAB`), from the engine's base that `dladdr` gives for one
+  of its global functions. The `dladdr` check that every address is in `libExSLNavi.so`
+  stays. `NAVI_LIB=<libExSLNavi.so> tools/navigraph/test.sh` binds all 28 from the file that way.
 - The helper's layout assumptions, checked against the engine's own code:
   - `Navi::VI::CService::GetVehiclePosition` makes the same calls: `NewComponent(0x7200)`,
     its vtable slot 0x20, then `CPositionInfo::GetDisplayPosition(…, false)`.
