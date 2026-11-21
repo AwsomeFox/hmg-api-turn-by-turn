@@ -22,6 +22,8 @@ static void display(void *info, void *p, u8 raw) { assert(info == &info_value &&
 static u64 parcel(void *p) { (void)p; return mode == 3 ? ~(u64)0 : 100; }
 static u64 link(void *p) { (void)p; return 7; }
 static u32 direction(void *p) { (void)p; return 1; }
+static u32 link_pos(void *p, u8 raw) { assert(p && raw == 0); return 40; }
+static u32 link_len(void *p, u8 raw) { assert(p && raw == 0); return 150; }
 static void *allocator_default(void) { return &allocator_value; }
 static void allocator_ctor(void *a, void *b) { assert(a && b == &allocator_value); }
 static void entity_ctor(void *e, const void *a) { assert(e && a); entities++; }
@@ -60,6 +62,7 @@ static void *resolve(const char *name) {
         { "_ZN13CPositionInfo18GetDisplayPositionER16CVehiclePositionb", (void *)display },
         { "_ZN16CVehiclePosition11GetParcelIdEv", (void *)parcel }, { "_ZN16CVehiclePosition9GetLinkIdEv", (void *)link },
         { "_ZN16CVehiclePosition12GetDirectionEv", (void *)direction },
+        { "_ZN16CVehiclePosition10GetLinkPosEb", (void *)link_pos }, { "_ZN16CVehiclePosition10GetLinkLenEb", (void *)link_len },
         { "_ZN14mByteAllocator19GetDefaultAllocatorEv", (void *)allocator_default },
         { "_ZN16mEntityAllocatorC2EP14mByteAllocator", (void *)allocator_ctor },
         { "_ZN11CEntityLinkC2ERK16mEntityAllocator", (void *)entity_ctor }, { "_ZN11CEntityLinkD2Ev", (void *)entity_dtor },
@@ -78,7 +81,7 @@ static void *resolve(const char *name) {
     for (unsigned i = 0; i < sizeof(t) / sizeof(t[0]); i++) {
         const char *a = t[i].n, *b = name;
         while (*a && *a == *b) { a++; b++; }
-        if (*a == *b) return mode == 11 && i == 20 ? 0 : t[i].f;
+        if (*a == *b) return mode == 11 && i == 22 ? 0 : t[i].f;
     }
     return 0;
 }
@@ -102,12 +105,13 @@ int main(void) {
     assert(navigraph_bind(&a, resolve, MODULE) == -21 && same(a.missing, "_ZN11CEntityLink9GetNodeIdEb"));
     mode = 0;
     assert(navigraph_bind(&a, resolve, MODULE) == 0 && a.module == MODULE);
-    puts("ok    bind: all 28 engine functions by name; a missing one is named");
+    puts("ok    bind: all 30 engine functions by name; a missing one is named");
 
     struct snapshot s;
     assert(navigraph_current(&a, &s) == 0 && s.parcel == 100 && s.link == 7 && s.direction == 1 && s.underpass == 1);
+    assert(s.pos == 40 && s.len == 150);
     assert(s.count == 2 && s.edges[0].link == 8 && s.edges[1].link == 9 && clean());
-    puts("ok    current: the matched link and its 2 onward links (stride 0x58), the profile's module tag, all freed");
+    puts("ok    current: the matched link, 40 m along its 150, and its 2 onward links (stride 0x58), the profile's module tag, all freed");
     for (mode = 1; mode <= 5; mode++) assert(navigraph_current(&a, &s) < 0 && s.count == 0 && clean());
     mode = 0;
     puts("ok    current: no component, no position info, no position, a link that won't load, 33 links: refused, all freed");
