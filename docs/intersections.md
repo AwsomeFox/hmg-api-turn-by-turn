@@ -240,23 +240,30 @@ step 1 lines) on, Android Auto guiding through city turns:
   `matched` near those turns, and a reason near the others.
 - The AR HUD arrow still animates.
 
-**Fallback: the lanes (setting `tbt_lane_side_streets`, off by default, with
-`tbt_standard`).** Android Auto sends the lanes before many turns, each with the ways
-its arrows point. When the map gives no side streets (no match, an engine build the mod
-doesn't know, or `tbt_map_side_streets` off), `AaTurns.laneSides` draws a road for each
-way the lanes point:
-- The turn's own road goes at the turn's angle. Arrows within 45° of the turn on its side
-  count as that same road.
-- Every other arrow adds a road at its angle: ahead 0, slight ±45, turn ±90, sharp ±135.
-  U-turn arrows add nothing (the road behind has no bit).
-- It needs an arrow going the turn's way and at least one going elsewhere. Otherwise it
-  sends 0.
-- The lanes must be the maneuver's own: the ones that came with its turn, before or
-  after it, and not the previous turn's.
+**The lanes (setting `tbt_lane_side_streets`, off by default, with `tbt_standard`).**
+Android Auto sends the lanes before many turns, each with the ways its arrows point. When
+a turn has lanes, `AaTurns.laneDiagram` draws the intersection from them, **ahead of the
+map's answer**. The map is used for turns without lanes. Maps' instruction and its lanes
+don't always agree (a "turn right" where the only lane goes slight right), and the
+diagram follows the lanes:
+- A road for every way an arrow points: ahead 0, slight ±45, turn ±90, sharp ±135. U-turn
+  arrows add nothing (the road behind has no bit).
+- The way out is the arrow on the instruction's side nearest its angle (for straight on,
+  within 45° of ahead): from the recommended lanes first, then any lane. **The cluster's
+  arrow turns to it**, so a "turn right" with a slight-right lane points at 45.
+- With no arrow the instruction's way, the instruction's own road is added at its angle,
+  and the arrow stays as the instruction.
+- Only with two roads or more. A single road is just the arrow, so it sends 0.
+- The lanes must be the step's own. Each navigation-state message (its dump, `S …`, comes
+  first) starts with none, and lanes that came in it before its turn go with that turn,
+  so a step without lanes never shows the last step's.
 
 What it can't show: a road no lane may turn into (a one-way street, a banned left), and
 anything at turns that come without lanes. On the 2026-11-03 captures about a third of
-the steps had lanes. Tested in `tools/aaturns/test.sh`.
+the steps had lanes. The library marks a lane recommended, not which of its arrows (see
+ch0iiih-fixes #9), so a straight+right lane on a right turn counts as recommending the
+right. Only the main display's arrow follows the lanes: the HUD's turn list keeps Maps'
+icon. Tested in `tools/aaturns/test.sh`.
 
 **Not yet:** CarPlay turns that come without a junction. They'd need the same question
 from `CpTurns`, a copy of `MapJunction` in the DiPO part, which can't share classes with

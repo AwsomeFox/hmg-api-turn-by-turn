@@ -96,11 +96,11 @@ final class AaTurns {
     /** goes up with every new maneuver (event, side or road), so an answer for an old one isn't used */
     int turnId;
     /**
-     * Setting tbt_lane_side_streets (with tbt_standard): when the map gives no side streets,
-     * a TURN's roads from its lanes' arrows (laneSides). The lanes are the maneuver's they
-     * came with: laneTurn is that maneuver's id. The library sends a step's lanes with its
-     * turn, before or after it, and the distance in a message of its own, so lanes that came
-     * since the last distance (lanesLast) go with the turn that follows them.
+     * Setting tbt_lane_side_streets (with tbt_standard): a TURN's intersection drawn from its
+     * lanes' arrows (laneDiagram), ahead of the map's. The lanes are the maneuver's they came
+     * with: laneTurn is that maneuver's id. Each navigation-state message (its dump, "S ...",
+     * comes first) starts with no lanes; lanes that came in it before its turn (lanesLast)
+     * go with that turn, so a step without lanes never inherits the last step's.
      */
     boolean laneSideStreets;
     String lanesNow;
@@ -133,6 +133,10 @@ final class AaTurns {
         if (ev == EV_DUMP) {
             Log.d("NAVDUMP", String.valueOf(str));
             hmgapi.hook.ProjectionHooks.navigationDump(str);   // to mods that asked for projection events (EGMP's route data)
+            if (str != null && str.startsWith("S ")) {   // a new step message: its lanes, if any, come with it
+                lanesNow = null;
+                lanesLast = false;
+            }
             return;
         }
         if (ev == EV_LANES) {
@@ -381,8 +385,16 @@ final class AaTurns {
             if (type == TYPE_TURN) {
                 int a = junctionAngle(event, turnSide);
                 if (a != NO_ANGLE) {
-                    if (junctions != null) sides = junctions.sides(turnId, meters, a);
-                    if (sides == 0 && laneSideStreets && laneTurn == turnId) sides = laneSides(lanesNow, a);
+                    int[] lane = laneSideStreets && laneTurn == turnId ? laneDiagram(lanesNow, a) : null;
+                    if (lane != null) {
+                        // the lanes say what the intersection is, and the arrow follows them
+                        // where Maps' instruction and its lanes disagree ("turn right" with
+                        // only a slight-right lane)
+                        sides = lane[0];
+                        dir = (lane[1] + 360) % 360;
+                    } else if (junctions != null) {
+                        sides = junctions.sides(turnId, meters, a);
+                    }
                 }
             }
         }
@@ -394,32 +406,53 @@ final class AaTurns {
     static final int NO_ANGLE = 999;
 
     /**
-     * Side streets from a maneuver's lanes (the library's lane string, as sendLanes reads
-     * it): one road for each way an arrow points, the turn's own road at its angle, and
-     * every arrow within 45 degrees of the turn on its side taken as that same road. Only
-     * when an arrow goes the turn's way and another goes somewhere else; else 0. U-turn
-     * arrows add nothing (the road behind has no bit). Lanes show only the roads a lane may
-     * turn into, so a road nobody may enter (one-way, no left turn) isn't drawn.
+     * A maneuver's intersection from its lanes (the library's lane string, as sendLanes reads
+     * it), for when Maps' instruction and its lanes disagree: {side streets, the way out
+     * (degrees, right positive)}, or null.
+     * - A road for every way an arrow points (ahead, slight, turn, sharp; U-turns add none,
+     *   the road behind has no bit).
+     * - The way out is the arrow on the instruction's side (for straight on, within 45
+     *   degrees) nearest the instruction's angle, from the recommended lanes first, then
+     *   any lane. With no arrow that way, the instruction's own angle, and its road added.
+     * - Only with two roads or more; one road is just the arrow.
+     * The library marks a lane recommended, not which of its arrows (ch0iiih-fixes #9), so
+     * a straight+right lane on a right turn counts as recommending the right. Lanes show
+     * only the roads a lane may turn into: a one-way street or a banned left isn't drawn.
      */
-    static int laneSides(String s, int angle) {
-        if (s == null || angle == NO_ANGLE || s.length() < 2) return 0;
+    static int[] laneDiagram(String s, int angle) {
+        if (s == null || angle == NO_ANGLE || s.length() < 2) return null;
         int n = hexByte(s, 0);
-        if (n <= 0 || n > 8) return 0;
-        int roads = 0;
-        boolean turn = false;
+        if (n <= 0 || n > 8) return null;
+        int roads = 0, best = NO_ANGLE, bestAny = NO_ANGLE;
         for (int k = 0; k < n; k++) {
             int at = k * 8 + 2;
-            if (hexByte(s, at) < 0) return 0;
+            int type = hexByte(s, at);
+            if (type < 0) return null;
             for (int j = 0; j < 3; j++) {
                 int b = hexByte(s, at + 2 + j * 2);
-                if (b < 0) return 0;
+                if (b < 0) return null;
                 int a = laneAngle(b);
                 if (a == NO_ANGLE) continue;
-                if (angle == 0 ? a == 0 : a != 0 && (a > 0) == (angle > 0) && Math.abs(a - angle) <= 45) turn = true;
-                else roads |= roadBit(a);
+                roads |= roadBit(a);
+                if (!sameWay(a, angle)) continue;
+                if (nearer(a, bestAny, angle)) bestAny = a;
+                if (type == 2 && nearer(a, best, angle)) best = a;
             }
         }
-        return turn && roads != 0 ? roads | roadBit(angle) : 0;
+        int out = best != NO_ANGLE ? best : bestAny != NO_ANGLE ? bestAny : angle;
+        roads |= roadBit(out);
+        return Integer.bitCount(roads) >= 2 ? new int[] { roads, out } : null;
+    }
+
+    /** an arrow at a goes the instruction's way: its side, or within 45 degrees of straight on */
+    static boolean sameWay(int a, int angle) {
+        if (angle == 0) return Math.abs(a) <= 45;
+        return a != 0 && (a > 0) == (angle > 0);
+    }
+
+    /** a is nearer the instruction's angle than the best so far (on a tie, the one first sent) */
+    static boolean nearer(int a, int best, int angle) {
+        return best == NO_ANGLE || Math.abs(a - angle) < Math.abs(best - angle);
     }
 
     /** a lane arrow (the cluster's: 1 straight, 2-4 right slight to sharp, 5 U-turn, 6-8 left sharp to slight) as an angle */

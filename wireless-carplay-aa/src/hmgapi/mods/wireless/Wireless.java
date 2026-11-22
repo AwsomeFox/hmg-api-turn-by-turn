@@ -311,8 +311,8 @@ public final class Wireless extends ModEntry {
                                     t.laneSideStreets = t.standardTurns && mod.settingBoolean("tbt_lane_side_streets", false);
                                     mod.log("Android Auto: navigation callback received; cluster bridge created"
                                             + (t.standardTurns ? " (standard turns"
-                                                    + (t.junctions != null ? ", side streets from the car's map" : "")
-                                                    + (t.laneSideStreets ? (t.junctions != null ? ", else" : ",") + " side streets from the lanes" : "")
+                                                    + (t.laneSideStreets ? ", intersections from the lanes" : "")
+                                                    + (t.junctions != null ? (t.laneSideStreets ? ", else" : ",") + " side streets from the car's map" : "")
                                                     + ")" : ""));
                                 }
                             }

@@ -47,7 +47,7 @@
       "default": false,
       "title": "Android Auto: the intersection's side streets from the lanes (test)",
       "apply": "restart",
-      "description": "With \"Turns in the car's own format\" on: near a turn that comes with lanes, the cluster draws a road around Android Auto's arrow for each way the lanes point (left, straight, right). Used when the car's map gives no side streets, or without that setting. Lanes show only the roads a lane may turn into, so a road nobody may enter (a one-way street, a banned left) isn't drawn, and turns without lanes keep the plain arrow. Takes effect when the head unit restarts."
+      "description": "With \"Turns in the car's own format\" on: near a turn that comes with lanes, the cluster draws the intersection from Android Auto's lanes: a road for each way they point (left, straight, right, slight, sharp), and the arrow pointing the way the recommended lane goes when Maps' instruction and its lanes disagree. Ahead of the car's map (tbt_map_side_streets), which is used for turns without lanes. Lanes show only the roads a lane may turn into, so a road nobody may enter (a one-way street, a banned left) isn't drawn, and turns without lanes keep the plain arrow unless the map has them. Takes effect when the head unit restarts."
     },
     {
       "key": "bridge",
