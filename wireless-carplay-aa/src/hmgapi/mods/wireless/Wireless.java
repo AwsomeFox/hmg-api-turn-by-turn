@@ -308,8 +308,12 @@ public final class Wireless extends ModEntry {
                                     turns.put(receiver, t = new AaTurns(app.context, c, handler));
                                     t.standardTurns = mod.settingBoolean("tbt_standard", false);
                                     if (mapSideStreets(mod)) t.junctions = new MapJunction(app.context, handler);
+                                    t.laneSideStreets = t.standardTurns && mod.settingBoolean("tbt_lane_side_streets", false);
                                     mod.log("Android Auto: navigation callback received; cluster bridge created"
-                                            + (t.standardTurns ? " (standard turns" + (t.junctions != null ? ", side streets from the car's map)" : ")") : ""));
+                                            + (t.standardTurns ? " (standard turns"
+                                                    + (t.junctions != null ? ", side streets from the car's map" : "")
+                                                    + (t.laneSideStreets ? (t.junctions != null ? ", else" : ",") + " side streets from the lanes" : "")
+                                                    + ")" : ""));
                                 }
                             }
                             if (t != null) OnTurns.this.run(t, args);

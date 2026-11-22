@@ -196,6 +196,24 @@ step 1 lines) on, Android Auto guiding through city turns:
   `matched` near those turns, and a reason near the others.
 - The AR HUD arrow still animates.
 
+**Fallback: the lanes (setting `tbt_lane_side_streets`, off by default, with
+`tbt_standard`).** Android Auto sends the lanes before many turns, each with the ways
+its arrows point. When the map gives no side streets (no match, an engine build the mod
+doesn't know, or `tbt_map_side_streets` off), `AaTurns.laneSides` draws a road for each
+way the lanes point:
+- The turn's own road goes at the turn's angle. Arrows within 45° of the turn on its side
+  count as that same road.
+- Every other arrow adds a road at its angle: ahead 0, slight ±45, turn ±90, sharp ±135.
+  U-turn arrows add nothing (the road behind has no bit).
+- It needs an arrow going the turn's way and at least one going elsewhere. Otherwise it
+  sends 0.
+- The lanes must be the maneuver's own: the ones that came with its turn, before or
+  after it, and not the previous turn's.
+
+What it can't show: a road no lane may turn into (a one-way street, a banned left), and
+anything at turns that come without lanes. On the 2026-11-03 captures about a third of
+the steps had lanes. Tested in `tools/aaturns/test.sh`.
+
 **Not yet:** CarPlay turns that come without a junction. They'd need the same question
 from `CpTurns`, a copy of `MapJunction` in the DiPO part, which can't share classes with
 the main code. Also compound junctions (ch0iiih's `CompoundJunction`: divided roads,
