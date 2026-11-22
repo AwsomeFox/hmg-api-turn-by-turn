@@ -170,10 +170,18 @@ Auto's arrow.
   - For a plain left or right, it must be the only road on that side.
   - Two roads in one 22.5° sector, or a node with one road on, give 0.
   - The answer is the junction's side streets: every road leaving it, the turn's included.
-- **The answer** goes back to GPM. `AaTurns` uses it for the next frames only if it names
-  this maneuver, is under 2.5 s old, and its junction is where the phone's distance says
-  (within the walk's tolerance plus 30 m). Otherwise it sends 0, the plain arrow, as
-  before.
+- **The answer** goes back to GPM (`MapJunction`). It counts only if it names the maneuver
+  being asked about, comes back within 2.5 s of the question, and its junction is where the
+  phone's distance said (within the walk's tolerance plus 30 m). A match is then **held for
+  that maneuver** (`NaviGraph.Held`) until a newer match replaces it, the maneuver changes,
+  or the phone's distance grows 100 m past where it matched. A "no match" answer doesn't
+  clear it. Until the first match it sends 0, the plain arrow, as before.
+
+  Without the hold, the side streets came and went on the 2026-11-21 drive. Each answer
+  replaced the last, so the matcher missing one second (another node in tolerance for a
+  moment, the car between links) blanked them. And a match stopped counting once the
+  car had closed more than about 45 m on where it matched, which at speed is under two
+  seconds.
 - **HMG-API's log** gets one line per change in the navigation app, with numbers only:
   `road graph: junction 300 m, turn 90: matched, side streets 0x811 at 300 m`, or why
   not, e.g. `... no clear way straight on at 180 m` or `... 2 roads on the turn's side`.

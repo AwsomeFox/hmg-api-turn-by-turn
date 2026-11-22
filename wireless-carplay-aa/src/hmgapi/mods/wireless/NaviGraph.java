@@ -450,6 +450,33 @@ final class NaviGraph {
         return Math.abs(answerMeters - meters) <= Math.max(15, Math.min(40, meters / 10)) + 30;
     }
 
+    /**
+     * On the phone side: a turn's match, held while the car closes on its junction. The
+     * question goes out about once a second and the matcher can miss now and then (another
+     * node in tolerance for a moment, the car between links), and on a drive the side
+     * streets came and went with each answer. An answer counts when it's usable for the
+     * question it came back for; from then on that turn keeps its side streets until a new
+     * match replaces them, the turn changes (a new id), or the phone's distance grows by
+     * 100 m over where it matched (not the junction the car is heading for any more). A "no
+     * match" answer doesn't clear it.
+     */
+    static final class Held {
+        int id = -1, sides, meters;
+
+        /** an answer for the question (id, askedMeters) asked age ms ago */
+        void answer(int id, int askedMeters, int sides, int answerMeters, long age) {
+            if (sides == 0 || !usable(id, askedMeters, id, answerMeters, age)) return;
+            this.id = id;
+            this.sides = sides;
+            this.meters = askedMeters;
+        }
+
+        int sides(int id, int meters) {
+            if (id != this.id || meters < 0 || meters > this.meters + 100) return 0;
+            return sides;
+        }
+    }
+
     static long[] row(long[] v, int i) {
         long[] r = new long[15];
         System.arraycopy(v, 5 + i * 15, r, 0, 15);

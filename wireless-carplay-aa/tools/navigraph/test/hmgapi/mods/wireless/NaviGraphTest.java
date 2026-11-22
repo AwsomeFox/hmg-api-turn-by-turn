@@ -1,5 +1,6 @@
 package hmgapi.mods.wireless;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
@@ -15,6 +16,11 @@ import java.util.Map;
  */
 public final class NaviGraphTest {
     static int fail;
+
+    /** NaviGraph's answer broadcast as MapJunction gets it */
+    static Intent answer(int id, int sides, int meters) {
+        return new Intent(NaviGraph.ANSWER).putExtra("id", id).putExtra("sides", sides).putExtra("meters", meters);
+    }
 
     static void check(String what, boolean ok) {
         System.out.println((ok ? "ok    " : "FAIL  ") + what);
@@ -169,12 +175,31 @@ public final class NaviGraphTest {
         check("MapJunction: not again within a second", c.sent.size() == 1);
         j.sides(8, 290, -90);
         check("MapJunction: a new turn asks at once", c.sent.size() == 2);
-        Intent ans = new Intent(NaviGraph.ANSWER).putExtra("id", 8).putExtra("sides", 0x811).putExtra("meters", 288);
-        c.receivers.get(0).onReceive(c, ans);
+        BroadcastReceiver back = c.receivers.get(0);
+        back.onReceive(c, answer(8, 0x811, 288));
         check("MapJunction: the answer for this turn is used", j.sides(8, 285, -90) == 0x811);
+        back.onReceive(c, answer(8, 0, -1));
+        check("MapJunction: a no-match answer doesn't clear it, held while the car closes in", j.sides(8, 200, -90) == 0x811);
+        back.onReceive(c, answer(8, 0x11, 280));
+        check("MapJunction: a newer match replaces it", j.sides(8, 190, -90) == 0x11);
+        back.onReceive(c, answer(8, 0x811, 120));
+        check("MapJunction: an answer far from the asked distance isn't taken", j.sides(8, 180, -90) == 0x11);
+        j.askedAt -= 3000;
+        back.onReceive(c, answer(8, 0x811, 288));
+        check("MapJunction: nor one for a question over 2.5 s old", j.sides(8, 170, -90) == 0x11);
+        check("MapJunction: not when the distance grows 100 m past where it matched", j.sides(8, 400, -90) == 0);
         check("MapJunction: not for another turn", j.sides(9, 285, -90) == 0);
-        j.answerAt -= 3000;
-        check("MapJunction: not when it's stale", j.sides(8, 280, -90) == 0);
+        back.onReceive(c, answer(8, 0x811, 288));
+        check("MapJunction: an answer for a turn it isn't asking about is dropped", j.held.sides == 0x11 && j.sides(9, 280, -90) == 0);
+
+        NaviGraph.Held h = new NaviGraph.Held();
+        check("Held: nothing at first", h.sides(1, 100) == 0);
+        h.answer(1, 300, 0, 300, 100);
+        check("Held: a no-match answer holds nothing", h.sides(1, 290) == 0);
+        h.answer(1, 300, 0x811, 310, 100);
+        check("Held: a usable match is held for its turn down to 0 m, and up to 100 m back",
+                h.sides(1, 300) == 0x811 && h.sides(1, 0) == 0x811 && h.sides(1, 400) == 0x811
+                        && h.sides(1, 401) == 0 && h.sides(2, 300) == 0 && h.sides(1, -1) == 0);
 
         // the navigation side's receiver: a question becomes NaviGraph.question
         hmgapi.hook.LoadedApp app = new hmgapi.hook.LoadedApp();
