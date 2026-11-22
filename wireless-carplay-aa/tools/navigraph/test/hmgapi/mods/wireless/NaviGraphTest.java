@@ -97,8 +97,8 @@ public final class NaviGraphTest {
         m.link(6, 0, 400, -60, 560);
         long[] car = at(1, 1, 20, 100);        // 20 m along link 1 heading north: 80 m to its end
 
-        check("remaining: toward the last point length - pos (80), toward the first pos (20), nonsense -1",
-                NaviGraph.remaining(car) == 80 && NaviGraph.remaining(at(1, 0, 20, 100)) == 20
+        check("remaining: length - pos whichever way the link is driven (80), nonsense -1",
+                NaviGraph.remaining(car) == 80 && NaviGraph.remaining(at(1, 0, 20, 100)) == 80
                         && NaviGraph.remaining(at(1, 1, 120, 100)) == -1 && NaviGraph.remaining(new long[] { -3 }) == -1);
 
         NaviGraph.Node n = NaviGraph.node(m.read(9, 3, 1), 1);
@@ -112,18 +112,47 @@ public final class NaviGraphTest {
                 NaviGraph.node(null, 1).error != null && NaviGraph.node(new long[] { 4, -36, 0, 0, 0 }, 1).error.contains("-36")
                         && NaviGraph.node(m.read(9, 3, 1), 2).error != null);
 
-        NaviGraph.Found f = NaviGraph.find(car, 300, m);
-        check("find: the crossroad at 300 m (80 + 100 + 120): " + f.reason, f.node != null && f.meters == 300 && f.node.sides == 0x811);
-        f = NaviGraph.find(car, 185, m);
-        check("find: the T at 180 m for 185: " + f.reason, f.node != null && f.meters == 180);
-        f = NaviGraph.find(car, 240, m);
-        check("find: nothing within 24 m of 240: " + f.reason, f.node == null && f.reason.startsWith("no junction"));
-        f = NaviGraph.find(car, 80, m);
+        check("window: 25 m near the turn, an eighth of the distance, 45 at most",
+                NaviGraph.window(50) == 25 && NaviGraph.window(200) == 25 && NaviGraph.window(280) == 35 && NaviGraph.window(600) == 45);
+        NaviGraph.Found f = NaviGraph.find(car, 300, 90, m);
+        check("find: right at 300 m: the crossroad (80 + 100 + 120): " + f.reason, f.node != null && f.meters == 300 && f.node.sides == 0x811);
+        f = NaviGraph.find(car, 205, 90, m);
+        check("find: right at 205 m, the phone reading 25 m long: the T at 180: " + f.reason, f.node != null && f.meters == 180);
+        f = NaviGraph.find(car, 165, 90, m);
+        check("find: ... and 15 m short: " + f.reason, f.node != null && f.meters == 180);
+        f = NaviGraph.find(car, 245, 90, m);
+        check("find: nothing around 237 m (30 either side): " + f.reason, f.node == null && f.reason.startsWith("no junction"));
+        f = NaviGraph.find(car, 85, 90, m);
         check("find: the node at 80 m has only the road on: not a junction: " + f.reason, f.node == null);
-        f = NaviGraph.find(car, 560, m);
+        f = NaviGraph.find(car, 600, 90, m);
         check("find: past the fork it can't tell which way is straight on: " + f.reason, f.node == null && f.reason.contains("straight on"));
-        f = NaviGraph.find(car, 480, m);
-        check("find: the fork at 480 m is a junction: " + f.reason, f.node != null && f.meters == 480);
+        f = NaviGraph.find(car, 480, 45, m);
+        check("find: slight right at 480 m: the fork: " + f.reason, f.node != null && f.meters == 480);
+        f = NaviGraph.find(car, 190, -90, m);
+        check("find: left near the T, which has no left: its reason: " + f.reason,
+                f.node == null && f.reason.startsWith("junction at 180 m") && f.reason.contains("no road"));
+
+        // side streets close together: left only at 100 m, right only at 125 m and at 150 m (car at 0)
+        Map2 c2 = new Map2();
+        c2.link(1, 0, -50, 0, 0);
+        c2.link(2, 0, 0, 0, 100);
+        c2.link(3, 0, 100, 0, 125);
+        c2.link(4, 0, 125, 0, 150);
+        c2.link(5, 0, 150, 0, 400);
+        c2.link(30, -80, 100, 0, 100);
+        c2.link(31, 0, 125, 80, 125);
+        c2.link(32, 0, 150, 80, 150);
+        long[] car2 = at(1, 1, 50, 50);
+        f = NaviGraph.find(car2, 118, 90, c2);
+        check("find: a right at 118 m: the right turn at 125, not the nearer left-only street at 100: " + f.reason,
+                f.node != null && f.meters == 125);
+        f = NaviGraph.find(car2, 118, -90, c2);
+        check("find: a left at 118 m: the left-only street at 100: " + f.reason, f.node != null && f.meters == 100);
+        f = NaviGraph.find(car2, 146, 90, c2);
+        check("find: a right at 146 m, two right turns as near (125 and 150): neither: " + f.reason,
+                f.node == null && f.reason.startsWith("two junctions"));
+        f = NaviGraph.find(car2, 172, 90, c2);
+        check("find: a right at 172 m: the one at 150, well nearer than the other: " + f.reason, f.node != null && f.meters == 150);
 
         NaviGraph.Answer r = NaviGraph.answer(car, 300, 90, m);
         check("answer: right at the crossroad: its side streets: " + r.reason, r.sides == 0x811 && r.meters == 300);
@@ -131,7 +160,7 @@ public final class NaviGraphTest {
         check("answer: left at the crossroad: the same roads", r.sides == 0x811);
         r = NaviGraph.answer(car, 180, 90, m);
         check("answer: right at the T: ahead and right", r.sides == (1 | 1 << 4));
-        r = NaviGraph.answer(car, 180, -90, m);
+        r = NaviGraph.answer(car, 190, -90, m);
         check("answer: left at the T, which has no left: 0: " + r.reason, r.sides == 0 && r.reason.contains("no road"));
         r = NaviGraph.answer(car, 300, 0, m);
         check("answer: straight on through the crossroad", r.sides == 0x811);
@@ -157,8 +186,9 @@ public final class NaviGraphTest {
         x = NaviGraph.match(node(0, -60), 45);
         check("match: a slight right where the only turning road is left: 0: " + x.reason, x.sides == 0);
 
-        check("usable: this turn, fresh, where the phone says; not another id, stale or far",
+        check("usable: this turn, fresh, about where the phone says; not another id, stale or far",
                 NaviGraph.usable(3, 300, 3, 300, 100) && NaviGraph.usable(3, 290, 3, 300, 2000)
+                        && NaviGraph.usable(3, 100, 3, 30, 100) && !NaviGraph.usable(3, 100, 3, 20, 100)
                         && !NaviGraph.usable(3, 300, 2, 300, 100) && !NaviGraph.usable(3, 300, 3, 300, 2600)
                         && !NaviGraph.usable(3, 300, 3, 400, 100) && !NaviGraph.usable(3, 300, 3, -1, 100));
 

@@ -27,9 +27,9 @@ import hmgapi.hook.ModContext;
  *   - tbt_map_side_streets: answers the phone side's questions (MapJunction, from
  *     AaTurns in GPM): "the junction about M meters ahead, where I turn A degrees?"
  *     It walks forward from the car along the road (find(): straight on through nodes,
- *     never at a fork it can't tell), takes the node at that distance, and answers its
- *     side streets only when the turn picks out one of its roads unambiguously (match()).
- *     Otherwise 0, and the turn keeps its plain arrow.
+ *     never at a fork it can't tell), and of the nodes around that distance takes the
+ *     one where the turn picks out one road unambiguously (match()), and answers its
+ *     side streets. Otherwise 0, and the turn keeps its plain arrow.
  *
  * Reads go through native/navigraph (libwlnavigraph.so), the engine's own exported
  * functions, on an engine build with a profile (its md5: its mArray module tag);
@@ -228,13 +228,14 @@ final class NaviGraph {
     }
 
     /**
-     * Meters from the car to the end of its link it's heading for: GetLinkPos counts from the
-     * link's first point (to check on a car: navi_road_graph logs both), so going toward its
-     * last point (direction 1) it's length - pos. -1 when it doesn't add up.
+     * Meters from the car to the end of its link it's heading for: length - pos. GetLinkPos
+     * counts the way the car is going, from the end it came in at, whichever way the link
+     * is drawn: on a US Ioniq 5 drive (2026-11-21) it ran from 0 up to the length on 298 of
+     * 303 links, 220 of them driven toward the link's first point. -1 when it doesn't add up.
      */
     static int remaining(long[] cur) {
         if (!positioned(cur) || cur[8] <= 0 || cur[7] < 0 || cur[7] > cur[8]) return -1;
-        return (int) (cur[3] == 1 ? cur[8] - cur[7] : cur[7]);
+        return (int) (cur[8] - cur[7]);
     }
 
     /** the current link and the node ahead, in words and numbers (no ids or coordinates) */
@@ -325,47 +326,75 @@ final class NaviGraph {
         return n;
     }
 
-    /** where find() got to: the node at the asked distance (or why not) */
+    /** where find() got to: the turn's node near the asked distance (or why not) */
     static final class Found {
         Node node;
         int meters = -1;
         String reason;
+        /** the node's match with the turn, when there's a node */
+        Answer match;
     }
 
     /**
-     * The intersection about meters ahead: from the node ahead of the car, straight on
-     * through each node (the one road within 30 degrees of straight, the next nearest at
-     * least 15 farther off) until the distance passes it. The node within the tolerance
-     * (10% of the distance, 15 to 40 m) that has more than one road on, nearest the asked
-     * distance, with no other one within 8 m of as good. After ch0iiih's StockMapLookahead.
+     * The phone's distance to a turn reads longer than the map's to its node: by a median of
+     * 13 m on the 2026-11-21 drive (95 samples on the last link before 8 turns: -13 to +30 m,
+     * nine in ten between 2 and 22). So the node is looked for around the phone's distance
+     * less PHONE_LONG, within window(): 25 m near the turn, an eighth of the distance farther
+     * out, 45 at most. That covered every sample; the 15 m either side of the phone's own
+     * distance it replaces covered two in three.
      */
-    static Found find(long[] cur, int meters, Reader reader) {
+    static final int PHONE_LONG = 8;
+
+    static int window(int meters) {
+        return Math.max(25, Math.min(45, meters / 8));
+    }
+
+    /**
+     * The intersection a turn of this angle is at, about meters ahead: from the node ahead
+     * of the car, straight on through each node (the one road within 30 degrees of straight,
+     * the next nearest at least 15 farther off) until the distance passes the window. Of the
+     * nodes in the window with more than one road on, the one the turn fits (match()); with
+     * several, the nearest to where the phone puts it, if it's 10 m nearer than the next.
+     * Picking by the turn first is what lets the window be wide: a side street on the other
+     * side 20 m before the turn isn't taken for it. After ch0iiih's StockMapLookahead.
+     */
+    static Found find(long[] cur, int meters, int angle, Reader reader) {
         Found f = new Found();
         int d = remaining(cur);
         if (d < 0) { f.reason = "no position on the link"; return f; }
         if (meters <= 0 || meters > MAX_METERS) { f.reason = "distance out of range"; return f; }
-        int tol = Math.max(15, Math.min(40, meters / 10));
+        int tol = window(meters), want = meters - PHONE_LONG;
         long parcel = cur[1], link = cur[2];
         int direction = (int) cur[3];
         Node best = null;
-        int bestErr = 999, secondErr = 999, bestAt = -1;
+        Answer bestMatch = null, miss = null;
+        int bestErr = 999, secondErr = 999, bestAt = -1, missErr = 999, missAt = -1;
+        String stop = null;
         java.util.Set<String> seen = new java.util.HashSet<String>();
         for (int hop = 0; hop < 16; hop++) {
-            if (!seen.add(parcel + ":" + link + ":" + direction)) { f.reason = "went round in a loop"; break; }
+            if (!seen.add(parcel + ":" + link + ":" + direction)) { stop = "went round in a loop"; break; }
             Node n = node(reader.read(parcel, link, direction), direction);
-            if (n.error != null) { f.reason = "node " + hop + ": " + n.error; break; }
-            int err = Math.abs(d - meters);
+            if (n.error != null) { stop = "node " + hop + ": " + n.error; break; }
+            int err = Math.abs(d - want);
             if (n.roads.size() >= 2 && err <= tol) {
-                if (err < bestErr) {
-                    secondErr = bestErr;
-                    bestErr = err;
-                    best = n;
-                    bestAt = d;
-                } else if (err < secondErr) {
-                    secondErr = err;
+                Answer m = match(n, angle);
+                if (m.sides != 0) {
+                    if (err < bestErr) {
+                        secondErr = bestErr;
+                        bestErr = err;
+                        best = n;
+                        bestMatch = m;
+                        bestAt = d;
+                    } else if (err < secondErr) {
+                        secondErr = err;
+                    }
+                } else if (err < missErr) {
+                    missErr = err;
+                    miss = m;
+                    missAt = d;
                 }
             }
-            if (d > meters + tol) break;
+            if (d > want + tol) break;
             Road on = null;
             int a1 = 999, a2 = 999;
             for (Road r : n.roads) {
@@ -373,7 +402,7 @@ final class NaviGraph {
                 if (a < a1) { a2 = a1; a1 = a; on = r; } else if (a < a2) a2 = a;
             }
             if (on == null || a1 > 30 || a2 - a1 < 15 || on.length <= 0) {
-                if (best == null) f.reason = n.roads.isEmpty() ? "the road ends" : "no clear way straight on at " + d + " m";
+                stop = n.roads.isEmpty() ? "the road ends" : "no clear way straight on at " + d + " m";
                 break;
             }
             d += on.length;
@@ -382,11 +411,12 @@ final class NaviGraph {
             direction = on.direction;
         }
         if (best == null) {
-            if (f.reason == null) f.reason = "no junction near " + meters + " m";
+            f.reason = miss != null ? "junction at " + missAt + " m, " + miss.reason : stop != null ? stop : "no junction near " + meters + " m";
             return f;
         }
-        if (secondErr - bestErr < 8) { f.reason = "two junctions near " + meters + " m"; return f; }
+        if (secondErr - bestErr < 10) { f.reason = "two junctions the turn fits near " + meters + " m"; return f; }
         f.node = best;
+        f.match = bestMatch;
         f.meters = bestAt;
         f.reason = "junction at " + bestAt + " m";
         return f;
@@ -432,22 +462,22 @@ final class NaviGraph {
         Answer a = new Answer();
         if (!positioned(cur)) { a.reason = "no position"; return a; }
         if (angle < -180 || angle > 180) { a.reason = "no turn"; return a; }
-        Found f = find(cur, meters, reader);
+        Found f = find(cur, meters, angle, reader);
         if (f.node == null) { a.reason = f.reason; return a; }
-        a = match(f.node, angle);
+        a = f.match;
         a.meters = f.meters;
-        if (a.sides == 0) a.reason = f.reason + ", " + a.reason;
         return a;
     }
 
     /**
      * On the phone side (MapJunction): an answer is for this turn when it's for this
-     * question's id, under 2.5 s old, and its junction is where the phone's distance says
-     * (within the find() tolerance, plus 30 m the car may have gone since).
+     * question's id, under 2.5 s old, and its junction is about where the phone's distance
+     * said: as far off as find() allows (PHONE_LONG and its window), plus 40 m the car may
+     * have gone between the question and the answer.
      */
     static boolean usable(int id, int meters, int answerId, int answerMeters, long age) {
         if (answerId != id || age < 0 || age > 2500 || answerMeters < 0 || meters < 0) return false;
-        return Math.abs(answerMeters - meters) <= Math.max(15, Math.min(40, meters / 10)) + 30;
+        return Math.abs(answerMeters - meters) <= PHONE_LONG + window(meters) + 40;
     }
 
     /**
