@@ -161,9 +161,13 @@ Auto's arrow.
     away.
   - At each node it goes straight on: the one road within 30° of straight, with any
     other at least 15° further off. If there's no clear way straight on, it stops.
-  - It stops once past the asked distance. The junction is the node with more than one
-    road on that's nearest the asked distance, within 10% (15 to 40 m). It's refused if
-    another node is within 8 m of as good.
+  - The phone's distance reads longer than the map's (see the drive below), so it looks
+    around the asked distance less 8 m, within 25 m near the turn, an eighth of the
+    distance farther out, 45 m at most. It stops once past that window.
+  - Of the nodes in the window with more than one road on, the junction is the one the
+    turn fits (the match below). With several, it's the nearest, if it's 10 m nearer
+    than the next. So a side street on the other side just before the turn isn't taken
+    for it.
 - **The match** (`NaviGraph.match`, after ch0iiih's `StockMapJunction`):
   - The turn has to pick out one road: the nearest to the turn's angle, within 60° (22°
     for straight), 15° nearer than any other, and on the turn's side.
@@ -189,6 +193,23 @@ Auto's arrow.
   made-up map (a T junction, a crossroad, a fork, the refusals), and `MapJunction`'s
   questions and answers through stand-in broadcasts. `tools/aaturns/test.sh` covers
   `AaTurns` asking, using and dropping answers.
+
+**The 2026-11-21 drive** (US Ioniq 5, about 2.5 hours, 3,087 road graph lines, 15
+approaches with questions) showed why most turns kept the plain arrow:
+- **The distance to the node ahead was wrong on most links.** The engine's position along
+  the link counts the way the car is going, from 0 up to the link's length, whichever
+  way the link is drawn (298 of 303 links; 220 of them driven toward the link's first
+  point). The helper took it as counted from the first point, so on those 220 it used
+  the distance already driven. Fixed: it's always length minus position.
+- **The phone's distance reads longer than the map's**, by a median of 13 m on the last
+  link before a turn (95 samples: -13 to +30 m, nine in ten between 2 and 22 m). The old
+  window, 15 m either side near a turn, held two in three of them. The new one held all.
+- **Each answer replaced the last**, so the few matches blinked. Fixed with the hold.
+- **Not fixed yet: nodes on a map parcel's edge** (`not read (-36)`, 11% of the node
+  reads). The helper refuses a node that joins another parcel, and the walk stops there:
+  one approach got nothing from 449 m down to 236 m. The engine has the adjacent node
+  and parcel ids for it (`CEntityNode::GetAdjNodeId`, `GetAdjParcelId`); their return
+  types need checking against the engine's own callers first.
 
 **On the car**, with `tbt_standard`, `tbt_map_side_streets` (and `navi_road_graph` for the
 step 1 lines) on, Android Auto guiding through city turns:
