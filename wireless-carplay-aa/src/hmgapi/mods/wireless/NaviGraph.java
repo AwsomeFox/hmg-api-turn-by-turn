@@ -432,8 +432,11 @@ final class NaviGraph {
      * The side streets for a turn at a node, only when the turn picks out one of its roads:
      * angle the turn's (degrees, right positive: 0 straight, 45 slight, 90, 135 sharp), the
      * nearest road within 60 degrees of it (22 straight) and 15 nearer than any other, on the
-     * turn's side; for a plain left or right, the only road on that side. Two roads in one
-     * sector, or a node with one road on, give 0. After ch0iiih's StockMapJunction.
+     * turn's side; for a plain left or right, the only road on that side. A road within 30
+     * degrees of straight is the way on, as in find(), not a road on a side: on the
+     * 2026-11-21 drive a left was refused where the road ahead bent 18 degrees left beside the
+     * street the turn took. Two roads in one sector, or a node with one road on, give 0.
+     * After ch0iiih's StockMapJunction.
      */
     static Answer match(Node n, int angle) {
         Answer a = new Answer();
@@ -446,7 +449,7 @@ final class NaviGraph {
         for (Road r : n.roads) {
             int e = (int) Math.abs(angle(r.angle - angle));
             if (e < best) { second = best; best = e; pick = r; } else if (e < second) second = e;
-            if (!straight && (right ? r.angle > 12 && r.angle <= 157 : r.angle < -12 && r.angle >= -157)) onSide++;
+            if (!straight && (right ? r.angle > 30 && r.angle <= 157 : r.angle < -30 && r.angle >= -157)) onSide++;
         }
         int tol = straight ? 22 : 60;
         if (pick == null || best > tol) { a.reason = "no road where the turn goes"; return a; }

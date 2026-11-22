@@ -183,6 +183,10 @@ public final class NaviGraphTest {
         check("match: a plain right with two roads on the right (60, 120): 0: " + x.reason, x.sides == 0);
         x = NaviGraph.match(rr, 135);
         check("match: a sharp right picks the 120 one: " + x.reason, x.sides == rr.sides);
+        x = NaviGraph.match(node(-81, -18, 101), -90);
+        check("match: a left where the road ahead bends 18 degrees left: the left street, the bend is the way on: " + x.reason, x.sides != 0);
+        x = NaviGraph.match(node(-81, -40, 101), -90);
+        check("match: ... but not with a second left road 40 degrees off: " + x.reason, x.sides == 0);
         x = NaviGraph.match(node(0, -60), 45);
         check("match: a slight right where the only turning road is left: 0: " + x.reason, x.sides == 0);
 

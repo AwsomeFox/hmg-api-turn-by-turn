@@ -211,6 +211,29 @@ approaches with questions) showed why most turns kept the plain arrow:
   and parcel ids for it (`CEntityNode::GetAdjNodeId`, `GetAdjParcelId`); their return
   types need checking against the engine's own callers first.
 
+`tools/navi/road-graph-study.py <HMG-API log>` does this reading for any drive: per
+approach, what the matcher answered then, what today's rules give for the node ahead of
+the car, and the phone's distance against the map's. It prints numbers and angles only.
+On this drive's 9 approaches (249 answers):
+- **Then: 60 matches. Today's rules, on the node ahead alone: 90**, with at least one in
+  8 of the 9, which the hold keeps to the turn. Another 105 answers had the junction
+  past the node ahead. The log can't replay the walk for those (it has no link ids), but
+  the walk now starts from the right distance.
+- **The ninth approach got nothing.** It was a slight left at speed, and a parcel-edge
+  node stopped the walk at every distance from 454 m in.
+- **The offset is mostly where the two maps put the turn, not delay.** The phone's
+  distance less the map's fits 11.4 m + 0.39 s x speed (r 0.31): a median of 10 m with
+  the car nearly stopped, 16 m at 7 to 11 m/s, and 18 m for rights against 13 m for
+  lefts. It also grows with distance (22 m at 100 to 250 m, 7 samples).
+- **One refusal was a rule too strict**: a left where the road ahead bent 18 degrees left
+  beside the street the turn took counted as two roads on the left. A road within 30
+  degrees of straight is now the way on, as in the walk.
+- **One was right to refuse**: the "turn" was a corner with one road on.
+
+Android Auto's own message dumps (how many steps Maps sends, how often it names the
+road) are in logcat only, which the restart after the drive cleared. Capture
+`logcat -s NAVDUMP AANAV` during the next one.
+
 **On the car**, with `tbt_standard`, `tbt_map_side_streets` (and `navi_road_graph` for the
 step 1 lines) on, Android Auto guiding through city turns:
 - The cluster draws the junction's roads around the arrow near most turns. In the log,
