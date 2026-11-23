@@ -87,6 +87,11 @@ to check first. With the setting off, nothing changes.
 - The owner's build also gives icons to the exit-angle-less slight turn (49) these apps send. Here it only goes out when an icon does.
 - Not yet seen on a drive: forks, highway exits, roundabouts and arrival.
 
+The maneuver line is logged with the setting off too, without `near:`; icon 0 means nothing
+went to the cluster for that maneuver. Alongside it: one line per route change
+(`CarPlay route: component … state …, maneuver … of …, distance …`), the app's name
+(`CarPlay: route guidance source …`) and every time DiPO stops route guidance (issue #24).
+
 ### Planned: the arrow gliding with the exact distance
 
 > **Not in the mod yet.** The mod still sends Android Auto's display distance. This part
