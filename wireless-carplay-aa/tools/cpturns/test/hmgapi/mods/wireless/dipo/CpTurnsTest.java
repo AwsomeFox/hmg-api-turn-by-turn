@@ -311,6 +311,20 @@ public final class CpTurnsTest {
         t.maneuver(maneuver(0, 2, 0, 0, 90, "First St", 700));
         expect("later details of a maneuver already sent: nothing extra (the next route update sends them)");
 
+        // the same, with details that name no component (index only): the waiting component has no
+        // maneuvers yet, and still gets its turn
+        Cluster c0 = c;
+        c = new Cluster();
+        CpTurns w = new CpTurns(new android.content.Context(), c, null);
+        w.routeGuidance(msg(0, U16, i(1), 1, ENUM, i(1), 11, STR, s("0.5"), 12, ENUM, i(1), 13, U16, i(0)));
+        expect("first route update before any details: nothing yet");
+        w.maneuver(msg(1, U16, i(0), 3, ENUM, i(2), 4, STR, s("First St"), 5, U32, i(800),
+                8, ENUM, i(0), 9, ENUM, i(0), 11, U8, i(90)));
+        expect("index-only details of the waited-for maneuver: the turn goes out",
+                "road [First St]", "tbt 67 0 0.0 0.5 0 0 2 0 0", "hud f201430000" + utf16("First St"),
+                "2c 2 5 0 0 0 0 0 0 0");
+        c = c0;
+
         // after a reset (another app, a disconnect) a no-icon maneuver at the same index and type
         // still clears what the old route left on the main display
         t.reset();

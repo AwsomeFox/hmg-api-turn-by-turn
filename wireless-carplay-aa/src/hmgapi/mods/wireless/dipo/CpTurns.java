@@ -158,6 +158,11 @@ final class CpTurns {
         }
         if (index < 0) return;
         if (ids == null) {
+            // a component waiting for this maneuver may have no maneuvers yet (its first route
+            // update came first): give it a map, or its turn stays blank until another update
+            for (Integer id : waiting.keySet()) {
+                if (maneuvers.get(id) == null) maneuvers.put(id, new LinkedHashMap<Integer, Maneuver>());
+            }
             for (Integer id : maneuvers.keySet()) {
                 LinkedHashMap<Integer, Maneuver> m = maneuvers.get(id);
                 if (m == null) continue;
