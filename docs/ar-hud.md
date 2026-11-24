@@ -84,13 +84,25 @@ Two more of its findings, in both formats:
   route update. While the car stands the phone sends none, so a route started parked
   stayed blank until the car moved.
 
-**Logs:** HMG-API's log gets one line per maneuver: `CarPlay turn: type … side … junction … exit … -> icon …, near: type … dir …`.
+**Side streets** (setting `tbt_side_streets`, off by default, needs `tbt_standard`): near a
+turn, the `TURN` frame carries the iPhone's junction as side streets, so the cluster draws
+the intersection around the arrow ([cluster-turns.md](cluster-turns.md#near-a-maneuver)).
+**Not yet checked on a car.** The AR HUD was only ever seen with side streets 0 (and 65535,
+which draws a road every way); whether it still animates with a real junction is the thing
+to check first. With the setting off, nothing changes.
+
+**Logs:** HMG-API's log gets one line per maneuver: `CarPlay turn: type … side … junction … exit … angles […] -> icon …, near: type … dir … sides 0x…`. `exit none` and `angles none` mean the iPhone didn't send them, and `(off)` after the side streets means the setting is off and 0 went out. So a drive with any app shows how many of its turns have a junction.
 
 **Checked on a car:** a Korean EV6 (CVEV.KOR, 260902) with the AR HUD, November 2026, by hwjang1, with Naver Map and T map on wireless CarPlay.
 - Right, left, slight left and U-turns animated as the car's own navigation's do.
 - The Korean firmware's `Navigation.DisplayType` values are the same.
 - The owner's build also gives icons to the exit-angle-less slight turn (49) these apps send. It has one here too now (above).
 - Not yet seen on a drive: forks, highway exits, roundabouts and arrival.
+
+The maneuver line is logged with the setting off too, without `near:`; icon 0 means nothing
+went to the cluster for that maneuver. Alongside it: one line per route change
+(`CarPlay route: component … state …, maneuver … of …, distance …`), the app's name
+(`CarPlay: route guidance source …`) and every time DiPO stops route guidance (issue #24).
 
 ### Planned: the arrow gliding with the exact distance
 

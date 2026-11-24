@@ -47,6 +47,8 @@ final class CpTurns {
     /** component id -> maneuver index -> maneuver (DiPO e/u.Am) */
     final LinkedHashMap<Integer, LinkedHashMap<Integer, Maneuver>> maneuvers = new LinkedHashMap<Integer, LinkedHashMap<Integer, Maneuver>>();
     String source;
+    /** the last route line logged (logRoute), so an unchanged route isn't logged again */
+    String lastRouteLog;
     /** last HUD list sent (type, next, road), so an unchanged one isn't resent */
     int hudType, hudNext;
     String hudRoad;
@@ -55,7 +57,13 @@ final class CpTurns {
      * navigation sends it (standard()); farther away, and in the HUD's turn list, the icons.
      */
     boolean standardTurns;
-    /** the last maneuver line logged (standard turns only), so a resent maneuver isn't logged again */
+    /**
+     * Setting tbt_side_streets (with tbt_standard): a TURN near a maneuver carries the side
+     * streets of the iPhone's junction (sideStreets()), so the cluster draws the intersection
+     * around the arrow as the car's own navigation does in Korea. Off: 0, no roads drawn.
+     */
+    boolean sideStreets;
+    /** the last maneuver line logged, so a resent maneuver isn't logged again */
     String lastLog;
     /**
      * What the main display shows: the component, maneuver index and type last sent with an
@@ -152,6 +160,11 @@ final class CpTurns {
         }
         if (index < 0) return;
         if (ids == null) {
+            // a component waiting for this maneuver may have no maneuvers yet (its first route
+            // update came first): give it a map, or its turn stays blank until another update
+            for (Integer id : waiting.keySet()) {
+                if (maneuvers.get(id) == null) maneuvers.put(id, new LinkedHashMap<Integer, Maneuver>());
+            }
             for (Integer id : maneuvers.keySet()) {
                 LinkedHashMap<Integer, Maneuver> m = maneuvers.get(id);
                 if (m == null) continue;
@@ -312,6 +325,7 @@ final class CpTurns {
             if (s == null || s.length() == 0) continue;
             String was = source;
             source = s;
+            if (was == null) Dipo.log("CarPlay: route guidance source " + s);
             if (was == null || was.equals(s)) return;
             Dipo.log("CarPlay: route guidance source changed from " + was + " to " + s + ", clearing turn-by-turn");
             reset();
@@ -324,6 +338,7 @@ final class CpTurns {
     /** one component's update to the cluster (DiPO e/u.a(Integer, Object), with the build's changes) */
     void turn(Integer id, Update u) {
         if (id < 0 || u == null) return;
+        logRoute(id, u);
         if (u.state == 0) {
             waiting.remove(id);
             stop();
@@ -360,6 +375,7 @@ final class CpTurns {
             default: unit = Cluster.UNIT_M; break;
         }
         int icon = icon(x.type, x.side, x.junction, x.exit, u.state);
+        logTurn(x, icon);
         // StartRoute has no direction: clear the previous app's HUD arrow.
         if (x.type == 11 && icon == 1) hudBlank();
         cluster.crossroadName(x.afterRoad);
@@ -370,7 +386,7 @@ final class CpTurns {
         shownId = id;
         shownIndex = list[0];
         shownType = x.type;
-        int type = icon, dir = 0, bar = 0;
+        int type = icon, dir = 0, bar = 0, sides = 0;
         if (standardTurns) {
             // the phone's distance to this maneuver in meters (item 10), once it has sent one
             int meters = u.nextStr == null || u.nextStr.equals("") ? -1 : u.distNext;
@@ -378,9 +394,9 @@ final class CpTurns {
             type = s[0];
             dir = s[1];
             bar = s[2];
-            logTurn(x, icon);
+            if (sideStreets && type == TYPE_TURN) sides = sideStreets(x.type, x.junction, x.exitSent, x.exit, x.angles);
         }
-        cluster.tbtInfo(type, 0, dir, dist, 0, 0, unit, bar, 0);
+        cluster.tbtInfo(type, sides, dir, dist, 0, 0, unit, bar, 0);
         sendHud(icon, id, u);
         sendHudDist(dist, unit);
         sendTrip(u);
@@ -510,16 +526,54 @@ final class CpTurns {
     }
 
     /**
-     * One line per maneuver in HMG-API's log with standard turns on: the iAP2 maneuver, its icon
-     * and what goes out near it. Numbers only, no road names; the phone resends a maneuver
-     * field by field, so a line equal to the last one isn't logged again.
+     * One line per maneuver in HMG-API's log: the iAP2 maneuver and its icon (0: nothing goes
+     * to the cluster for it), and with standard turns what goes out near it. Numbers only, no
+     * road names; the phone resends a maneuver field by field, so a line equal to the last one
+     * isn't logged again. Issue #24: with Google Maps nothing reached the cluster, and the log
+     * couldn't say whether its maneuvers had no icon or never came.
      */
     void logTurn(Maneuver x, int icon) {
-        int[] n = standard(x.type, x.side, x.junction, x.exit, icon, GUIDE_WINDOW);
-        String s = "CarPlay turn: type " + x.type + " side " + x.side + " junction " + x.junction + " exit " + x.exit
-                + " -> icon " + icon + ", near: type " + n[0] + " dir " + n[1];
+        String s = "CarPlay turn: type " + x.type + " side " + x.side + " junction " + x.junction + " exit ";
+        if (standardTurns) {
+            // the junction's angles are logged whether side streets are on or not: which apps send them
+            s += (x.exitSent ? String.valueOf(x.exit) : "none")
+                    + " angles " + (x.angles == null ? "none" : java.util.Arrays.toString(x.angles));
+        } else {
+            s += x.exit;
+        }
+        s += " -> icon " + icon;
+        if (standardTurns) {
+            int[] n = standard(x.type, x.side, x.junction, x.exit, icon, GUIDE_WINDOW);
+            s += ", near: type " + n[0] + " dir " + n[1];
+            if (n[0] == TYPE_TURN) {
+                s += " sides 0x" + Integer.toHexString(sideStreets(x.type, x.junction, x.exitSent, x.exit, x.angles))
+                        + (sideStreets ? "" : " (off)");
+            }
+        }
         if (s.equals(lastLog)) return;
         lastLog = s;
+        Dipo.log(s);
+    }
+
+    /**
+     * One line when a component's route changes: its state (RouteGuidanceState: 0 none, 1
+     * active, 2 arrived, 3 loading, 4 locating, 5 rerouting, 6 proceed to route), the
+     * current maneuver's index, whether its details have come, how many maneuvers the list
+     * has, and whether the phone sent a distance to it. Numbers only.
+     */
+    void logRoute(Integer id, Update u) {
+        int[] list = u.list;
+        LinkedHashMap<Integer, Maneuver> m = maneuvers.get(id);
+        String now;
+        if (list == null || list.length == 0) {
+            now = "no maneuver";
+        } else {
+            now = "maneuver " + list[0] + (m != null && m.get(list[0]) != null ? "" : " (no details yet)") + " of " + list.length;
+        }
+        String s = "CarPlay route: component " + id + " state " + u.state + ", " + now + ", distance "
+                + (u.nextStr == null || u.nextStr.length() == 0 ? "none" : "sent");
+        if (s.equals(lastRouteLog)) return;
+        lastRouteLog = s;
         Dipo.log(s);
     }
 
@@ -580,6 +634,51 @@ final class CpTurns {
             default:           // on-ramps, ferries: the icon, with the bar
                 return new int[] { icon, 0, bar };
         }
+    }
+
+    /**
+     * The side streets (updateTBTInfo's 16-bit sideStreet) for a TURN at an intersection, from
+     * the iPhone's junction: one bit per road leaving it, the exit included, as the car's own
+     * navigation sets them (libExSLNavi SetSideStreetBit; Korean cars' 4-way crossroad is 0x811:
+     * ahead, right, left). 0 (no roads drawn) unless every part is there and agrees: an
+     * intersection (junction 0), an exit angle this update carried on the maneuver's side
+     * (|exit| <= 22 going straight), and junction angles all in -180..180.
+     * type: iAP2 ManeuverType (1/20/47/49 left, 2/21/48/50 right, 3 straight); exit and angles
+     * in degrees, right positive.
+     * Sector algorithm after ch0iiih/HMG_Phone_Projection_TBT PhoneJunction (AGPL-3.0), itself
+     * adapted from BeegSchmooze/Lambda-Carplay-AA-Bridge LeafiaCpTurn (GPL-3.0).
+     */
+    static int sideStreets(int type, int junction, boolean exitSent, int exit, int[] angles) {
+        if (junction != 0 || !exitSent || angles == null || angles.length == 0 || exit < -180 || exit > 180) return 0;
+        boolean left = type == 1 || type == 20 || type == 47 || type == 49;
+        boolean right = type == 2 || type == 21 || type == 48 || type == 50;
+        if (left ? exit >= 0 : right ? exit <= 0 : type != 3 || Math.abs(exit) > 22) return 0;
+        int roads = roadBit(exit);
+        for (int a : angles) {
+            if (a < -180 || a > 180) return 0;
+            roads |= roadBit(a);
+        }
+        return roads;
+    }
+
+    /**
+     * A road's side-street bit, from its angle (degrees clockwise from straight ahead): bit 0
+     * ahead (within 12 degrees), bits 1-7 the right side and 8-14 the left in 22.5 degree
+     * sectors from 12 and 192 degrees, none for the road behind (169-192, the one we come in on).
+     */
+    static int roadBit(int angle) {
+        int cw = ((angle % 360) + 360) % 360;
+        if (cw < 12 || cw > 348) return 1;
+        int lo = 12, bit = 1;
+        for (int k = 0; k < 15; k++) {
+            int hi = lo + (k % 2 == 0 ? 22 : 23);
+            if (k != 7) {
+                if (cw >= lo && cw < hi) return 1 << bit;
+                bit++;
+            }
+            lo = hi;
+        }
+        return 0;
     }
 
     /**
@@ -958,6 +1057,8 @@ final class CpTurns {
         int index, type, distance, distUnits, side, junction, exit, linkedLane;
         String description, afterRoad, distStr;
         int[] angles;
+        /** this update carried JunctionElementExitAngle (item 11): exit 0 is then straight on, not absent */
+        boolean exitSent;
 
         Maneuver(int index, int id, Iap2NotiMsg msg) {
             if (msg == null) return;
@@ -977,6 +1078,7 @@ final class CpTurns {
             junction = 0;
             angles = null;
             exit = 0;
+            exitSent = false;
             linkedLane = 0;
         }
 
@@ -985,6 +1087,7 @@ final class CpTurns {
             Iap2NotiMsg.Iap2ObjGroup g = msg.getItemGroup();
             this.index = index;
             exit = 0;
+            exitSent = false;
             for (int k = 0; k < g.getItemCnt(); k++) {
                 Iap2NotiMsg.Iap2ObjItem it = g.getObjItem(k);
                 int item = it.getItemId(), n = it.getItemObjCount();
@@ -1000,6 +1103,7 @@ final class CpTurns {
                             }
                         } else if (item == 11 && v != null) {
                             exit = v[0];
+                            exitSent = true;
                         }
                         break;
                     }
