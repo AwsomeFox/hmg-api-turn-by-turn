@@ -273,6 +273,11 @@ public final class AaTurnsTest {
                 asked.add(id + " " + meters + " " + angle);
                 return answer[0];
             }
+
+            @Override
+            public void close() {
+                asked.add("close");
+            }
         };
         j.status(1);
         j.nextTurn("Oak Ave", AaTurns.RIGHT, AaTurns.TURN, -1, 0);
@@ -302,6 +307,9 @@ public final class AaTurnsTest {
         j.nextTurnDistance(100, 8, 328, AaTurns.FEET);
         check("map side streets: an on-ramp's TURN asks nothing and sends 0: " + c.calls,
                 asked.isEmpty() && c.calls.toString().contains("tbt 13 0 "));
+        j.end();
+        check("map side streets: the session's end closes the map's side (its receiver): " + asked,
+                asked.equals(java.util.Arrays.asList("close")) && j.junctions == null);
         check("junctionAngle: straight 0, slight 45, left -90, sharp 135; none for ramps, U-turns and no side",
                 AaTurns.junctionAngle(AaTurns.STRAIGHT, 0) == 0 && AaTurns.junctionAngle(AaTurns.SLIGHT_TURN, AaTurns.RIGHT) == 45
                         && AaTurns.junctionAngle(AaTurns.TURN, AaTurns.LEFT) == -90

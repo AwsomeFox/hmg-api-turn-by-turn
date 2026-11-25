@@ -4,7 +4,8 @@
 # (profiles, a node's roads as angles and side streets, the walk to the junction at a
 # distance, matching a turn to its road) and MapJunction (Android Auto's questions).
 # NAVI_LIB=<a car's libExSLNavi.so> also binds every engine function from that file's
-# symbol table (weak ones too), as on the car.
+# symbol table (weak ones too), as on the car. AaTurns' own Java dependencies (AaNavState
+# where it's in) are compiled with it.
 set -e
 HERE=$(cd "$(dirname "$0")" && pwd)
 T=$(mktemp -d)
@@ -13,6 +14,6 @@ ${CC:-clang} -O1 -Wall -Wextra -Werror -Wno-unused-function "$HERE/navigraph_tes
 "$T/navigraph_test" "$HERE/../../files/libwlnavigraph.so" ${NAVI_LIB:+"$NAVI_LIB"}
 W=$HERE/../../src/hmgapi/mods/wireless
 javac --release 8 -Xlint:-options -nowarn -d "$T" $(find "$HERE/test" -name '*.java') \
-    "$W/NaviGraph.java" "$W/MapJunction.java" "$W/AaTurns.java" \
+    "$W/NaviGraph.java" "$W/MapJunction.java" "$W/AaTurns.java" $(ls "$W/AaNavState.java" 2>/dev/null) \
     $(find "$HERE/../aaturns/stubs" -name '*.java' ! -path '*/android/content/*')
 java -cp "$T" hmgapi.mods.wireless.NaviGraphTest

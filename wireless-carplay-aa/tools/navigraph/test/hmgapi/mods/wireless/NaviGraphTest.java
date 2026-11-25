@@ -17,9 +17,12 @@ import java.util.Map;
 public final class NaviGraphTest {
     static int fail;
 
+    /** the token the MapJunction under test asks with */
+    static long token;
+
     /** NaviGraph's answer broadcast as MapJunction gets it */
     static Intent answer(int id, int sides, int meters) {
-        return new Intent(NaviGraph.ANSWER).putExtra("id", id).putExtra("sides", sides).putExtra("meters", meters);
+        return new Intent(NaviGraph.ANSWER).putExtra("token", token).putExtra("id", id).putExtra("sides", sides).putExtra("meters", meters);
     }
 
     static void check(String what, boolean ok) {
@@ -111,6 +114,21 @@ public final class NaviGraphTest {
         check("node: no answer, not read, a bad direction: errors",
                 NaviGraph.node(null, 1).error != null && NaviGraph.node(new long[] { 4, -36, 0, 0, 0 }, 1).error.contains("-36")
                         && NaviGraph.node(m.read(9, 3, 1), 2).error != null);
+        // the crossroad with its left road's shape not loaded (row status 7): what's left would be a T
+        final Map2 full = m;
+        NaviGraph.Reader leftUnread = new NaviGraph.Reader() {
+            @Override
+            public long[] read(long parcel, long link, int direction) {
+                long[] v = full.read(parcel, link, direction).clone();
+                for (int i = 1; v[0] == 4 && i < v[2]; i++) if (v[5 + i * 15 + 1] == 21) v[5 + i * 15 + 2] = 7;
+                return v;
+            }
+        };
+        n = NaviGraph.node(leftUnread.read(9, 3, 1), 1);
+        check("node: a road at the node not read: the node isn't used (not taken for a T): " + n.error,
+                n.error != null && n.error.contains("not read (7)") && n.roads.isEmpty() && n.sides == 0);
+        NaviGraph.Found f0 = NaviGraph.find(car, 300, 90, leftUnread);
+        check("find: ... so the right at 300 m gets nothing from it: " + f0.reason, f0.node == null && f0.reason.contains("not read"));
 
         check("window: 25 m near the turn, an eighth of the distance, 45 at most",
                 NaviGraph.window(50) == 25 && NaviGraph.window(200) == 25 && NaviGraph.window(280) == 35 && NaviGraph.window(600) == 45);
@@ -199,17 +217,25 @@ public final class NaviGraphTest {
         // MapJunction: AaTurns' questions to com.mnsoft.navi, its answers back
         Context c = new Context();
         MapJunction j = new MapJunction(c, new android.os.Handler());
+        token = j.token;
         int s = j.sides(7, 300, 90);
         Intent q = c.sent.isEmpty() ? null : c.sent.get(0);
         check("MapJunction: asks com.mnsoft.navi about turn 7 at 300 m, right 90, answer to GPM: " + q,
                 s == 0 && q != null && NaviGraph.ASK.equals(q.action) && "com.mnsoft.navi".equals(q.pkg)
                         && q.getIntExtra("id", 0) == 7 && q.getIntExtra("meters", 0) == 300 && q.getIntExtra("angle", 0) == 90
-                        && "com.google.android.projection.sink".equals(q.getStringExtra("reply")));
+                        && "com.google.android.projection.sink".equals(q.getStringExtra("reply"))
+                        && q.getLongExtra("token", 0) == j.token && j.token != 0);
         j.sides(7, 290, 90);
         check("MapJunction: not again within a second", c.sent.size() == 1);
         j.sides(8, 290, -90);
         check("MapJunction: a new turn asks at once", c.sent.size() == 2);
         BroadcastReceiver back = c.receivers.get(0);
+        back.onReceive(c, answer(8, 0x811, 288).putExtra("token", j.token + 1));
+        check("MapJunction: an answer without the question's token isn't taken (not the navigation's)", j.sides(8, 285, -90) == 0);
+        Intent none = answer(8, 0x811, 288);
+        none.extras.remove("token");
+        back.onReceive(c, none);
+        check("MapJunction: nor one with no token", j.sides(8, 285, -90) == 0);
         back.onReceive(c, answer(8, 0x811, 288));
         check("MapJunction: the answer for this turn is used", j.sides(8, 285, -90) == 0x811);
         back.onReceive(c, answer(8, 0, -1));
@@ -225,6 +251,14 @@ public final class NaviGraphTest {
         check("MapJunction: not for another turn", j.sides(9, 285, -90) == 0);
         back.onReceive(c, answer(8, 0x811, 288));
         check("MapJunction: an answer for a turn it isn't asking about is dropped", j.held.sides == 0x11 && j.sides(9, 280, -90) == 0);
+        int sentBefore = c.sent.size();
+        j.close();
+        j.close();
+        check("MapJunction: close() unregisters its receiver (once) and stops asking",
+                c.receivers.isEmpty() && j.sides(10, 200, 90) == 0 && c.sent.size() == sentBefore);
+        Context again = new Context();
+        for (int k = 0; k < 5; k++) new MapJunction(again, new android.os.Handler()).close();
+        check("MapJunction: reconnects don't pile up receivers", again.receivers.isEmpty());
 
         NaviGraph.Held h = new NaviGraph.Held();
         check("Held: nothing at first", h.sides(1, 100) == 0);
@@ -238,10 +272,13 @@ public final class NaviGraphTest {
         // the navigation side's receiver: a question becomes NaviGraph.question
         hmgapi.hook.LoadedApp app = new hmgapi.hook.LoadedApp();
         NaviGraph.start(new hmgapi.hook.ModContext(), app, false, true);
+        check("NaviGraph: questions only from a sender holding " + NaviGraph.ASKER + " (the system's apps): " + app.context.permissions,
+                app.context.permissions.size() == 1 && NaviGraph.ASKER.equals(app.context.permissions.get(0)));
         app.context.receivers.get(0).onReceive(app.context, q);
         long[] got = NaviGraph.question;
-        check("NaviGraph: the question is kept (id, meters, angle) and who to answer",
-                got != null && got[1] == 7 && got[2] == 300 && got[3] == 90 && "com.google.android.projection.sink".equals(NaviGraph.asker));
+        check("NaviGraph: the question is kept (id, meters, angle), who to answer and its token",
+                got != null && got[1] == 7 && got[2] == 300 && got[3] == 90 && "com.google.android.projection.sink".equals(NaviGraph.asker)
+                        && NaviGraph.askToken == j.token);
         Intent bad = new Intent(NaviGraph.ASK).putExtra("id", 1).putExtra("reply", "x; rm");
         NaviGraph.question = null;
         app.context.receivers.get(0).onReceive(app.context, bad);
@@ -249,11 +286,11 @@ public final class NaviGraphTest {
         NaviGraph.Answer out = new NaviGraph.Answer();
         out.sides = 0x811;
         out.meters = 300;
-        NaviGraph.reply(app.context, "com.google.android.projection.sink", 7, out);
+        NaviGraph.reply(app.context, "com.google.android.projection.sink", 42L, 7, out);
         Intent sent = app.context.sent.get(0);
-        check("NaviGraph: the answer goes to the asker only: " + sent,
+        check("NaviGraph: the answer goes to the asker only, with its token: " + sent,
                 NaviGraph.ANSWER.equals(sent.action) && "com.google.android.projection.sink".equals(sent.pkg)
-                        && sent.getIntExtra("sides", 0) == 0x811 && sent.getIntExtra("id", 0) == 7);
+                        && sent.getIntExtra("sides", 0) == 0x811 && sent.getIntExtra("id", 0) == 7 && sent.getLongExtra("token", 0) == 42L);
 
         check("profiles: the US 260507 engine with its module tag 0x9550; others none",
                 NaviGraph.profile("caa8d4c2120ec0a14aafc401c6720971") != null

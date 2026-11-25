@@ -156,6 +156,14 @@ Auto's arrow.
   broadcast: the maneuver's id, the phone's meters to it, and the turn's angle (0, ±45,
   ±90, ±135, right positive). It asks again at most once a second, or at once for a new
   maneuver. Ramps, forks, U-turns and roundabouts ask nothing and keep 0.
+  - **Who may ask and answer:** the question goes to `com.mnsoft.navi` only, and the
+    navigation takes questions only from a sender holding `BLUETOOTH_PRIVILEGED` (the
+    system's apps hold it, and GPM runs as the system; an app installed on the head unit
+    doesn't). Each Android Auto session asks with a random token, and only an answer
+    with that token counts, so only the navigation, which alone got the question, can
+    answer it.
+  - **When the session ends** (GPM's receiver is destroyed), `AaTurns.end` closes
+    `MapJunction`, which unregisters its receiver, so reconnects don't pile them up.
 - **The walk** (`NaviGraph.find`, after ch0iiih's `StockMapLookahead`):
   - It starts from the node ahead of the car, the car's remaining meters on its link
     away.
@@ -173,6 +181,8 @@ Auto's arrow.
     for straight), 15° nearer than any other, and on the turn's side.
   - For a plain left or right, it must be the only road on that side.
   - Two roads in one 22.5° sector, or a node with one road on, give 0.
+  - A node with any road whose shape didn't load isn't used at all, by the walk or the
+    match: the roads left could look like the only road on a side, or the one way on.
   - The answer is the junction's side streets: every road leaving it, the turn's included.
 - **The answer** goes back to GPM (`MapJunction`). It counts only if it names the maneuver
   being asked about, comes back within 2.5 s of the question, and its junction is where the

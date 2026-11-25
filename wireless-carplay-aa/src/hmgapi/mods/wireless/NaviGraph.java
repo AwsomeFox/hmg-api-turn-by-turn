@@ -49,6 +49,12 @@ final class NaviGraph {
     /** the phone side asks (to com.mnsoft.navi) and gets its answer (to the asking package) */
     static final String ASK = "hmgapi.mods.wireless.JUNCTION_ASK", ANSWER = "hmgapi.mods.wireless.JUNCTION";
     static final String NAVIGATION = "com.mnsoft.navi";
+    /**
+     * what a question's sender must hold: signature|privileged, so the system's apps have it
+     * (GPM runs as the system) and an app installed on the head unit doesn't. As the bridge's
+     * iAP2 receiver. The answer back is checked by the token the question gave (MapJunction).
+     */
+    static final String ASKER = "android.permission.BLUETOOTH_PRIVILEGED";
     /** a question is answered while it's younger than this (ms) */
     static final int ASK_LIFE = 3000;
     /** farthest maneuver asked about (m) */
@@ -69,6 +75,7 @@ final class NaviGraph {
     /** the last question: {elapsed ms, id, meters, angle}, and who asked */
     static volatile long[] question;
     static volatile String asker;
+    static volatile long askToken;
 
     static void start(final ModContext mod, final LoadedApp app, final boolean probe, final boolean answer) {
         if (started) return;
@@ -80,10 +87,11 @@ final class NaviGraph {
                     String from = i.getStringExtra("reply");
                     if (from == null || !from.matches("[A-Za-z0-9_.]{1,100}")) return;
                     asker = from;
+                    askToken = i.getLongExtra("token", 0);
                     question = new long[] { SystemClock.elapsedRealtime(), i.getIntExtra("id", 0), i.getIntExtra("meters", -1),
                             i.getIntExtra("angle", 999) };
                 }
-            }, new IntentFilter(ASK));
+            }, new IntentFilter(ASK), ASKER, null);
         }
         Thread t = new Thread(new Runnable() {
             @Override
@@ -150,7 +158,7 @@ final class NaviGraph {
                 if (answerNow) {
                     answered = now;
                     Answer a = answer(cur, (int) q[2], (int) q[3], reader);
-                    reply(context, asker, (int) q[1], a);
+                    reply(context, asker, askToken, (int) q[1], a);
                     String line = "junction " + q[2] + " m, turn " + q[3] + ": " + a.reason
                             + (a.sides != 0 ? ", side streets 0x" + Integer.toHexString(a.sides) + " at " + a.meters + " m" : "");
                     if (!line.equals(lastAnswer)) {
@@ -164,9 +172,10 @@ final class NaviGraph {
         }
     }
 
-    static void reply(Context context, String to, int id, Answer a) {
+    static void reply(Context context, String to, long token, int id, Answer a) {
         Intent i = new Intent(ANSWER);
         i.setPackage(to);
+        i.putExtra("token", token);
         i.putExtra("id", id);
         i.putExtra("sides", a.sides);
         i.putExtra("meters", a.meters);
@@ -298,8 +307,15 @@ final class NaviGraph {
         double from = direction == 1 ? bearing(in[9], in[10], x, y, lat) : bearing(in[7], in[8], x, y, lat);
         for (int i = 1; i < rows; i++) {
             long[] r = row(v, i);
-            if (r[2] != 0) continue;
             if (r[0] == in[0] && r[1] == in[1]) continue;   // the car's own link, listed at its node too
+            if (r[2] != 0) {
+                // a road whose shape didn't load: the others alone could look like one road on a
+                // side, or one way straight on, when there are two, so the node isn't used
+                n.error = "a road at the node not read (" + r[2] + ")";
+                n.roads.clear();
+                n.sides = 0;
+                return n;
+            }
             Road road = new Road();
             double out;
             if (r[5] == x && r[6] == y) {

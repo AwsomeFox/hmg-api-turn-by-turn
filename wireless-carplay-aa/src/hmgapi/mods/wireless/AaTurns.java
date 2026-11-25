@@ -92,6 +92,9 @@ final class AaTurns {
     /** a maneuver's side streets: id (turnId), the phone's meters to it, the turn's angle (right positive) -> bits or 0 */
     interface Junctions {
         int sides(int id, int meters, int angle);
+
+        /** the session is over: let go of what it holds (receivers) */
+        void close();
     }
     /** goes up with every new maneuver (event, side or road), so an answer for an old one isn't used */
     int turnId;
@@ -335,6 +338,10 @@ final class AaTurns {
     /** The connection ended: clear what we showed, if a route was on. */
     void end() {
         handler.removeCallbacks(tick);
+        if (junctions != null) {
+            junctions.close();
+            junctions = null;
+        }
         if (navLive) status(2);
     }
 
