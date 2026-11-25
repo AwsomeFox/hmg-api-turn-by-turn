@@ -72,6 +72,10 @@ From [ch0iiih's Phone Projection TBT](https://github.com/ch0iiih/HMG_Phone_Proje
 - **The upcoming turn** (the HUD list's second icon, the cluster's turn list) gets the same
   icon as the turn itself, and straight (65) where there is none. Before, everything but
   plain turns, straight and U-turns went out as 64, the cluster's loading spinner.
+- **Left-hand traffic roundabouts** use the car's clockwise icons (192-203, the
+  counterclockwise 96-107 + 96) in the turn, the HUD list and the turns ahead, not only in
+  the car's own format near the maneuver (`EXIT_ROUNDABOUT_TRS_LEFT` 33). 106's twin 202,
+  the loading spinner on the Creta Electric, is never sent.
 
 Two more of its findings, in both formats:
 

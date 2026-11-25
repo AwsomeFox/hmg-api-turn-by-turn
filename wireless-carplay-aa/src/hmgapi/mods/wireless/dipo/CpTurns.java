@@ -434,9 +434,26 @@ final class CpTurns {
     /**
      * The cluster icon for a maneuver: iAP2 ManeuverType, driving side (0 right-hand
      * traffic, 1 left), junction type (0 intersection, 1 roundabout) and exit angle, as
-     * the turn-by-turn build maps them (0: nothing to show).
+     * the turn-by-turn build maps them (0: nothing to show). In left-hand traffic a
+     * roundabout's icon is from the car's clockwise set (192-203), here, so the turn, the
+     * HUD list, the turns ahead and the car's own format all draw the same circulation.
      */
     static int icon(int type, int side, int junction, int exit, int state) {
+        int i = tableIcon(type, side, junction, exit, state);
+        return side == 1 ? clockwise(i) : i;
+    }
+
+    /**
+     * A counterclockwise roundabout icon (96-107) as its clockwise twin (192-203, + 96), for
+     * left-hand traffic; any other icon as it is. 106 (twin 202, the loading spinner on the
+     * Creta Electric) is never made.
+     */
+    static int clockwise(int icon) {
+        return icon >= 96 && icon <= 107 && roundaboutDir(icon) >= 0 ? icon + 96 : icon;
+    }
+
+    /** icon(), in the counterclockwise set (the build's table, and the fallbacks added to it) */
+    private static int tableIcon(int type, int side, int junction, int exit, int state) {
         switch (type) {
             // Ordinary left/right types carry the direction even when the optional
             // exit angle is absent (the parser resets it to zero on every update).

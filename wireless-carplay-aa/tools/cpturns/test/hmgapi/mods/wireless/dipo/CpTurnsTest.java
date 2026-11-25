@@ -260,9 +260,9 @@ public final class CpTurnsTest {
         expect("component 0's first update: DiPO starts it empty (state 0), so the HUD is cleared",
                 "2c 0 0 0 0 0 0 0 0 0", "lanes f1", "hud f2", "hud f2");
 
-        check("icons: sharp left 69, slight right 66, roundabout exit 96/97, U-turn left-hand traffic 73",
+        check("icons: sharp left 69, slight right 66, roundabout exit 96 (192 clockwise, left-hand traffic), U-turn left-hand traffic 73",
                 CpTurns.icon(1, 0, 0, -120, 1) == 69 && CpTurns.icon(2, 0, 0, 60, 1) == 66 && CpTurns.icon(2, 0, 1, 0, 1) == 96
-                        && CpTurns.icon(31, 1, 1, 0, 1) == 96 && CpTurns.icon(4, 1, 0, 0, 1) == 73 && CpTurns.icon(47, 0, 0, -140, 1) == 69
+                        && CpTurns.icon(31, 1, 1, 0, 1) == 192 && CpTurns.icon(4, 1, 0, 0, 1) == 73 && CpTurns.icon(47, 0, 0, -140, 1) == 69
                         && CpTurns.icon(99, 0, 0, 0, 1) == 0);
         check("lane angles: 0 straight, 90 right, -45 slight left, 180 back",
                 CpTurns.laneIcon(0) == 1 && CpTurns.laneIcon(90) == 3 && CpTurns.laneIcon(-45) == 8 && CpTurns.laneIcon(180) == 5
@@ -379,7 +379,7 @@ public final class CpTurnsTest {
     static void iconFallbacks() {
         check("enter/exit roundabout (6/7): the exit's icon from its angle, junction flag or not; straight (65) with none",
                 CpTurns.icon(6, 0, 0, 0, 1) == 65 && CpTurns.icon(7, 0, 0, 0, 1) == 65 && CpTurns.icon(6, 0, 1, 90, 1) == 99
-                        && CpTurns.icon(7, 0, 0, -90, 1) == 105 && CpTurns.icon(6, 1, 1, 180, 1) == 102
+                        && CpTurns.icon(7, 0, 0, -90, 1) == 105 && CpTurns.icon(6, 1, 1, 180, 1) == 198
                         && CpTurns.icon(6, 0, 1, 40, 1) == 97 && CpTurns.icon(6, 0, 1, -40, 1) == 107);
         check("roundaboutIcon: one icon per 45 degrees, as roundaboutDir pairs them",
                 CpTurns.roundaboutDir(CpTurns.roundaboutIcon(0)) == 0 && CpTurns.roundaboutDir(CpTurns.roundaboutIcon(90)) == 90
@@ -394,6 +394,22 @@ public final class CpTurnsTest {
                         && CpTurns.aheadIcon(47, 0, 0, -140) == 69 && CpTurns.aheadIcon(21, 0, 0, 0) == 67 && CpTurns.aheadIcon(20, 0, 0, 0) == 70
                         && CpTurns.aheadIcon(13, 0, 0, 0) == 174 && CpTurns.aheadIcon(23, 0, 0, 0) == 81 && CpTurns.aheadIcon(12, 0, 0, 0) == 112
                         && CpTurns.aheadIcon(6, 0, 1, 90) == 99 && CpTurns.aheadIcon(29, 0, 1, 90) == 99);
+        boolean lht = true;
+        int[][] rb = { { 2, 1, 0 }, { 2, 1, 90 }, { 2, 1, 120 }, { 2, 1, 180 }, { 1, 1, -120 }, { 1, 1, -90 }, { 1, 1, -30 },
+                { 31, 1, 0 }, { 6, 1, 90 }, { 7, 0, -45 }, { 6, 0, 135 } };
+        for (int[] x : rb) {
+            int right = CpTurns.icon(x[0], 0, x[1], x[2], 1), left = CpTurns.icon(x[0], 1, x[1], x[2], 1);
+            // right-hand traffic: the counterclockwise set; left-hand: its clockwise twin, never 202
+            if (right != 0 && CpTurns.roundaboutDir(right) >= 0 && right > 107) lht = false;
+            if (CpTurns.roundaboutDir(left) < 0 || left < 192 || left == 202) lht = false;
+            if (CpTurns.aheadIcon(x[0], 1, x[1], x[2]) >= 64 && x[0] > 4 && CpTurns.aheadIcon(x[0], 1, x[1], x[2]) != left) lht = false;
+            int[] near = CpTurns.standard(x[0], 1, x[1], x[2], left, 200);
+            if (near[0] != 33 || near[1] != CpTurns.roundaboutDir(left)) lht = false;
+        }
+        check("left-hand traffic roundabouts: the clockwise icons (192-203) in the turn, the turns ahead and the car's format", lht);
+        check("clockwise: only the roundabout icons move, 106 never",
+                CpTurns.clockwise(99) == 195 && CpTurns.clockwise(107) == 203 && CpTurns.clockwise(67) == 67
+                        && CpTurns.clockwise(106) == 106 && CpTurns.clockwise(195) == 195);
         boolean never64 = true;
         for (int type = 0; type <= 60; type++)
             for (int side = 0; side <= 2; side++)
@@ -404,7 +420,7 @@ public final class CpTurnsTest {
                     }
         check("upcoming slot: never 64 (the spinner) or below, for any type, side, junction or angle", never64);
         check("standard turns: a roundabout entered with an angle is the roundabout type with the exit's direction",
-                is(CpTurns.standard(6, 0, 1, 90, 99, 200), 32, 90, 40) && is(CpTurns.standard(7, 1, 0, -90, 105, 200), 33, 270, 40));
+                is(CpTurns.standard(6, 0, 1, 90, 99, 200), 32, 90, 40) && is(CpTurns.standard(7, 1, 0, -90, 201, 200), 33, 270, 40));
 
         int unit = Car.unit;
         Car.unit = Car.DISTANCE_KM;
