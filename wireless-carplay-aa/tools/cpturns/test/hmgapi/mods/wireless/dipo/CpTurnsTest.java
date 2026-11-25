@@ -320,6 +320,21 @@ public final class CpTurnsTest {
         expect("standard turns, item 11 without item 10: the destination's icon (112), not ARRIVED from a 0 m it never sent",
                 "road [Home Rd]", "tbt 112 0 0.0 2.0 0 0 2 0 0", "hud f201700000" + utf16("Home Rd"), "2c 2 0 2 0 0 0 0 0 0");
         check("startupMeters: item 10, else the maneuver's, else -1", startupCase());
+
+        // the list moves on to the next maneuver without new meters (item 10): the old turn's
+        // last 15 m aren't the new one's, so its own 1200 m go out, not near-turn mode
+        c = new Cluster();
+        t = new CpTurns(new android.content.Context(), c, null);
+        t.standardTurns = true;
+        t.maneuver(maneuver(0, 2, 0, 0, 90, "First St", 300));
+        t.maneuver(maneuver(1, 1, 0, 0, -90, "Second St", 1200));
+        t.routeGuidance(msg(0, U16, i(1), 1, ENUM, i(1), 10, U32, i(15), 12, ENUM, i(1), 13, U16, i(0, 1)));
+        check("standard turns: 15 m before the first turn it's near-turn (TURN 90): " + c.calls,
+                c.calls.contains("tbt 13 0 90.0 " + (15 * 3.28084f) + " 0 0 3 10 0"));
+        c.calls.clear();
+        t.routeGuidance(msg(0, U16, i(1), 13, U16, i(1)));
+        check("next maneuver without item 10: its own 1200 m and its icon (70), not the old 15 m: " + c.calls,
+                c.calls.contains("tbt 70 0 0.0 " + (1200 / 1609f) + " 0 0 2 0 0"));
     }
 
     static boolean startupCase() {

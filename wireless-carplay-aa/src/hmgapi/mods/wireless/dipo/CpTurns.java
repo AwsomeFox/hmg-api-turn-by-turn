@@ -996,6 +996,8 @@ final class CpTurns {
         void read(int id, Iap2NotiMsg msg) {
             Iap2NotiMsg.Iap2ObjGroup g = msg == null ? null : msg.getItemGroup();
             if (g == null) return;
+            int head = list == null || list.length == 0 ? -1 : list[0];
+            boolean next = false;
             for (int k = 0; k < g.getItemCnt(); k++) {
                 Iap2NotiMsg.Iap2ObjItem it = g.getObjItem(k);
                 int item = it.getItemId(), n = it.getItemObjCount();
@@ -1026,6 +1028,7 @@ final class CpTurns {
                         else if (item == 10) {
                             distNext = v[0];
                             hasNext = true;
+                            next = true;
                         }
                         break;
                     }
@@ -1069,6 +1072,14 @@ final class CpTurns {
                         break;
                     }
                 }
+            }
+            // the current maneuver changed (item 13) with no new meters to it: the old ones were the
+            // previous maneuver's, so they no longer count (else a new turn starts at the old
+            // turn's last few meters, near-turn already)
+            int now = list == null || list.length == 0 ? -1 : list[0];
+            if (now != head && !next) {
+                distNext = 0;
+                hasNext = false;
             }
         }
     }
