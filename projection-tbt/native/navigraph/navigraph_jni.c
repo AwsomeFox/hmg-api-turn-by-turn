@@ -1,4 +1,4 @@
-/* navigraph's JNI side, for hmgapi.mods.wireless.NaviGraph (in com.mnsoft.navi).
+/* navigraph's JNI side, for hmgapi.mods.tbt.NaviGraph (in com.mnsoft.navi).
  * Symbols come only from the engine already loaded in this process (dlsym with
  * RTLD_DEFAULT, no dlopen; weak ones from the engine's own symbol table, which 4.4's dlsym
  * skips), and each must belong to libExSLNavi.so (dladdr).
@@ -49,7 +49,7 @@ static void *find(const char *name) {
 }
 
 /* null when every engine function is there; else what's missing or not the engine's */
-JNIEXPORT jstring JNICALL Java_hmgapi_mods_wireless_NaviGraph_nativeBind(JNIEnv *env, jclass cls, jint module) {
+JNIEXPORT jstring JNICALL Java_hmgapi_mods_tbt_NaviGraph_nativeBind(JNIEnv *env, jclass cls, jint module) {
     (void)cls;
     refused = 0;
     int status = navigraph_bind(&engine, find, (u16)module);
@@ -61,7 +61,7 @@ JNIEXPORT jstring JNICALL Java_hmgapi_mods_wireless_NaviGraph_nativeBind(JNIEnv 
 
 /* {status, parcel, link, direction, overpass, underpass, count, meters along the link, its length,
  *  count x (parcel, link)} */
-JNIEXPORT jlongArray JNICALL Java_hmgapi_mods_wireless_NaviGraph_nativeCurrent(JNIEnv *env, jclass cls) {
+JNIEXPORT jlongArray JNICALL Java_hmgapi_mods_tbt_NaviGraph_nativeCurrent(JNIEnv *env, jclass cls) {
     (void)cls;
     jlong v[9 + 64]; zero(v, sizeof(v));
     int n = 1;
@@ -82,7 +82,7 @@ JNIEXPORT jlongArray JNICALL Java_hmgapi_mods_wireless_NaviGraph_nativeCurrent(J
 }
 
 /* the node a link reaches in a direction: navigraph_node_rows' values */
-JNIEXPORT jlongArray JNICALL Java_hmgapi_mods_wireless_NaviGraph_nativeNode(JNIEnv *env, jclass cls, jlong parcel, jlong link, jint direction) {
+JNIEXPORT jlongArray JNICALL Java_hmgapi_mods_tbt_NaviGraph_nativeNode(JNIEnv *env, jclass cls, jlong parcel, jlong link, jint direction) {
     (void)cls;
     long long v[5 + 9 * 15];
     int n;

@@ -1,13 +1,13 @@
 #!/bin/sh
-# Build libwlnavigraph.so: reads the car navigation engine's road graph around the car,
-# read only, inside com.mnsoft.navi (navigraph.c; Java side hmgapi.mods.wireless.NaviGraph).
-#   native/navigraph/build.sh [output]   (default: ../../files/libwlnavigraph.so)
+# Build libtbtnavigraph.so: reads the car navigation engine's road graph around the car,
+# read only, inside com.mnsoft.navi (navigraph.c; Java side hmgapi.mods.tbt.NaviGraph).
+#   native/navigraph/build.sh [output]   (default: ../../files/libtbtnavigraph.so)
 # No libc or NDK: it only imports dlsym and dladdr from the head unit's libdl.so (a stub
 # library with that name is linked in to record the dependency). Needs clang + lld and a
 # JDK's jni.h (JAVA_HOME).
 set -e
 HERE=$(cd "$(dirname "$0")" && pwd)
-OUT=${1:-$HERE/../../files/libwlnavigraph.so}
+OUT=${1:-$HERE/../../files/libtbtnavigraph.so}
 case "$OUT" in /*) ;; *) OUT=$(pwd)/$OUT ;; esac
 CLANG=${CLANG:-clang}
 J=${JAVA_HOME:?set JAVA_HOME to a JDK}
@@ -22,5 +22,5 @@ cp "$HERE/navigraph.c" "$HERE/navigraph_jni.c" "$W/"
 (cd "$W" && "$CLANG" $T -Os -fPIC -ffreestanding -fno-builtin -fno-exceptions -fno-asynchronous-unwind-tables \
     -I"$J/include" -I"$J/include/$JOS" \
     -shared -nostdlib -fuse-ld=lld -Wl,-z,now -Wl,-z,defs -Wl,--no-rosegment -Wl,--hash-style=sysv -Wl,--build-id=none \
-    -Wl,-soname,libwlnavigraph.so -o "$OUT" navigraph_jni.c libdl.so)
+    -Wl,-soname,libtbtnavigraph.so -o "$OUT" navigraph_jni.c libdl.so)
 md5sum "$OUT" 2>/dev/null || md5 -r "$OUT"

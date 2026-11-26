@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
         /* our own library (ARM ELF32): a global and a weak symbol, by the loaded image's symbol table */
         u8 *own = map_elf(argv[1]);
         assert(own);
-        void *jni = navigraph_elf_lookup(own, "Java_hmgapi_mods_wireless_NaviGraph_nativeBind");
+        void *jni = navigraph_elf_lookup(own, "Java_hmgapi_mods_tbt_NaviGraph_nativeBind");
         void *weak = navigraph_elf_lookup(own, "navigraph_weak_probe");
         assert(jni && ((uptr)jni & 1) && weak && ((uptr)weak & 1));
         assert(!navigraph_elf_lookup(own, "navigraph_no_such_symbol") && !navigraph_elf_lookup(own, "dlsym"));

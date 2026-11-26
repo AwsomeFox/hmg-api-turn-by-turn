@@ -1,5 +1,5 @@
 Compile-time signatures of the head unit's libraries that this mod's DiPO part
-(`hmgapi.mods.wireless.dipo`) links against: `com.tcc.iap2` (the iAP2 server's
+(`hmgapi.mods.tbt.dipo`) links against: `com.tcc.iap2` (the iAP2 server's
 client API) and `com.broadcom.bt` (Broadcom's Bluetooth connection manager).
 Our own declarations, written to match the car's method names and types; only the
 members the mod uses. The SDK's `bin/build-mod.sh` compiles them onto the class path and leaves them

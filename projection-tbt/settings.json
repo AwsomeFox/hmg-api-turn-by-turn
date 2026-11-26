@@ -2,14 +2,6 @@
   "version": 1,
   "settings": [
     {
-      "key": "tbt",
-      "type": "toggle",
-      "default": true,
-      "title": "Turn-by-turn on the cluster and HUD",
-      "apply": "rebuild",
-      "description": "Android Auto's turns need a known version of the car's Android Auto library; on one the mod doesn't know, they stay off and the car's own navigation keeps the cluster. CarPlay's turns don't depend on it."
-    },
-    {
       "key": "tbt_standard",
       "type": "toggle",
       "default": false,
@@ -56,76 +48,6 @@
       "title": "Android Auto: the intersection's side streets from the lanes (test)",
       "apply": "restart",
       "description": "With \"Turns in the car's own format\" on: near a turn that comes with lanes, the cluster draws the intersection from Android Auto's lanes: a road for each way they point (left, straight, right, slight, sharp), and the arrow pointing the way the recommended lane goes when Maps' instruction and its lanes disagree. Ahead of the car's map (tbt_map_side_streets), which is used for turns without lanes. Lanes show only the roads a lane may turn into, so a road nobody may enter (a one-way street, a banned left) isn't drawn, and turns without lanes keep the plain arrow unless the map has them. Takes effect when the head unit restarts."
-    },
-    {
-      "key": "bridge",
-      "type": "toggle",
-      "default": true,
-      "title": "Wireless CarPlay (Bluetooth bridge and Wi-Fi sessions)",
-      "apply": "rebuild"
-    },
-    {
-      "key": "shared_identity",
-      "type": "toggle",
-      "default": true,
-      "title": "Shared CarPlay identity",
-      "apply": "restart",
-      "description": "Allow installed mods to contribute vehicle and appearance information to CarPlay's identification message. Takes effect when the head unit restarts."
-    },
-    {
-      "key": "audio",
-      "type": "toggle",
-      "default": true,
-      "title": "CarPlay music and Siri over Wi-Fi (AAC, Opus)",
-      "apply": "rebuild"
-    },
-    {
-      "key": "now_playing",
-      "type": "toggle",
-      "default": true,
-      "title": "Song, artist and album art on wireless CarPlay",
-      "apply": "restart",
-      "description": "A hook in the CarPlay app (no files changed): asks the phone for Now Playing again once wireless CarPlay's session is up, for the cluster, the split screen and album art apps."
-    },
-    {
-      "key": "menu",
-      "type": "toggle",
-      "default": true,
-      "title": "Phone Projection settings open Device Connections",
-      "apply": "restart",
-      "description": "Settings > Phone Projection, and the Settings button of the car's \"connect a phone\" popup, open Device Connections as on a stock car. With the wireless features on, the first would open the wireless page and the second an app these builds don't have (it crashed). Hooks only (no files changed). Settings > Phone Projection: US/Canada only; other regions keep the stock choice."
-    },
-    {
-      "key": "usb_drives",
-      "type": "toggle",
-      "default": true,
-      "apply": "restart",
-      "title": "USB drives and hubs don't start wired Android Auto",
-      "description": "A hook in the Android Auto app (no files changed). Without it, a USB drive can block wireless Android Auto until the head unit restarts."
-    },
-    {
-      "key": "aa_firewall",
-      "type": "toggle",
-      "default": false,
-      "title": "Allow wireless Android Auto through the hotspot firewall",
-      "apply": "rebuild",
-      "description": "Experimental for Ioniq 6 CAN 260206. Allows new IPv4 TCP connections to port 40515 only from the car's hotspot subnet. HMG-API manages the rule and removes it when this setting or the mod is disabled. Leave off on cars that connect without it."
-    },
-    {
-      "key": "cp_firewall",
-      "type": "toggle",
-      "default": false,
-      "title": "Allow wireless CarPlay through the hotspot firewall",
-      "apply": "rebuild",
-      "description": "Needed on the Ioniq 6 USA 260507 and the Elantra N (CN7NPE) USA 260903, whose stock firewalls allow the CarPlay ports only on the wired link. Accepts CarPlay's ports from the hotspot's own addresses, TCP and UDP, as destination or source: 5000-5001, 5020, 5353, 6000-6003, 6011, 6020, 6030 and 7000 on IPv4 and IPv6, 6031 on IPv6, and ICMPv6 (neighbor discovery). HMG-API manages the rules and removes them when this setting or the mod is disabled. Leave off on cars that connect without it."
-    },
-    {
-      "key": "carplay_log",
-      "type": "toggle",
-      "default": false,
-      "title": "CarPlay's own log (troubleshooting)",
-      "apply": "restart",
-      "description": "For finding out why wireless CarPlay disconnects: the CarPlay system logs each session in detail (as TccCarPlay), so Record a problem or a log capture shows why it ended. Its lines name your phone (model and name). Leave it off unless someone helping you asks for it. Takes effect when the head unit restarts."
     }
   ]
 }

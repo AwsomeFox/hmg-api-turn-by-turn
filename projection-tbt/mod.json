@@ -1,23 +1,26 @@
 {
-  "id": "wireless-carplay-aa",
-  "name": "Wireless CarPlay + Android Auto",
-  "version": "2.2.0-rc.9",
+  "id": "projection-tbt",
+  "name": "Phone Turn-by-Turn (CarPlay + Android Auto)",
+  "version": "1.0.0-beta.1",
   "hmgapi": ">=1.1.0-rc.8",
   "authors": [
-    "VysseCodes"
+    "VysseCodes",
+    "AwsomeFox",
+    "Open-HMG contributors"
   ],
   "license": "AGPL-3.0",
+  "repo": "https://github.com/Open-HMG/hmgapi-projection-tbt",
   "nemesis_conflicts": [
-    "wireless.projection",
     "projection.tbt",
     "enhanced.projection"
   ],
-  "description": "Wireless CarPlay and Android Auto on the head unit's hotspot, with turn-by-turn on the cluster and HUD.",
-  "api": {
-    "packages": [
-      "hmgapi.mods.wireless.api"
-    ]
-  },
+  "conflicts": [
+    {
+      "id": "wireless-carplay-aa",
+      "version": "<3.0.0-beta.1"
+    }
+  ],
+  "description": "Android Auto's and CarPlay's turn-by-turn directions on the cluster and HUD, wired or wireless.",
   "system": [
     {
       "model": [
@@ -29,10 +32,7 @@
         "NQ5HEV"
       ],
       "region": "USA",
-      "firmware": "260507",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260507"
     },
     {
       "model": [
@@ -41,18 +41,12 @@
         "NEEV23SE"
       ],
       "region": "USA",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": "NEEV",
       "region": "CAN",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": [
@@ -60,42 +54,27 @@
         "NEEV"
       ],
       "region": "CAN",
-      "firmware": "260206",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260206"
     },
     {
       "model": "CEEV",
       "region": "CAN",
-      "firmware": "260206",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260206"
     },
     {
       "model": "CEEV",
       "region": "USA",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": "CEEV",
       "region": "CAN",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": "CN7NPE",
       "region": "USA",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": [
@@ -126,10 +105,7 @@
         "TMPHEV23"
       ],
       "region": "USA",
-      "firmware": "260507",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260507"
     },
     {
       "model": [
@@ -160,10 +136,7 @@
         "TMPHEV23"
       ],
       "region": "CAN",
-      "firmware": "260206",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260206"
     },
     {
       "model": [
@@ -194,10 +167,7 @@
         "TMPHEV23"
       ],
       "region": "USA",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": [
@@ -228,10 +198,7 @@
         "TMPHEV23"
       ],
       "region": "CAN",
-      "firmware": "260903",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260903"
     },
     {
       "model": [
@@ -261,10 +228,7 @@
         "YGPE"
       ],
       "region": "USA",
-      "firmware": "260507",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260507"
     },
     {
       "model": [
@@ -293,10 +257,7 @@
         "YGPE"
       ],
       "region": "CAN",
-      "firmware": "260206",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260206"
     },
     {
       "model": [
@@ -335,26 +296,17 @@
         "YGPEHEV"
       ],
       "region": "KOR",
-      "firmware": "260902",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260902"
     },
     {
       "model": "CEEV",
       "region": "USA",
-      "firmware": "260206",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260206"
     },
     {
       "model": "CN7PE",
       "region": "USA",
-      "firmware": "260507",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260507"
     },
     {
       "model": [
@@ -372,36 +324,9 @@
         "SP2PE"
       ],
       "region": "CAN",
-      "firmware": "260206",
-      "features": [
-        "hmgapi.wifi"
-      ]
+      "firmware": "260206"
     }
   ],
-  "parts": [
-    {
-      "id": "projection"
-    },
-    {
-      "id": "tbt",
-      "when": "settings.tbt"
-    },
-    {
-      "id": "bridge",
-      "when": "settings.bridge"
-    },
-    {
-      "id": "audio",
-      "when": "settings.audio"
-    }
-  ],
-  "feature_flags": [
-    "com.hkmc.software.connectivity.carplay_wireless",
-    "com.hkmc.software.connectivity.androidauto_wireless"
-  ],
-  "wifi": {
-    "projection": true
-  },
   "logs": {
     "tags": [
       "DiPO",
@@ -415,10 +340,8 @@
   },
   "hooks": {
     "jar": "hooks.jar",
-    "entry": "hmgapi.mods.wireless.Wireless",
+    "entry": "hmgapi.mods.tbt.Tbt",
     "points": {
-      "framework.context_impl.start_service": "replace",
-      "btsettings.projection_helper.open_wireless_page": "replace",
       "framework.navigation_cluster.update_tbt_info": "replace",
       "framework.navigation_cluster.update_tbt_sub_info": "replace",
       "framework.navigation_cluster.update_tbt_sub_info_b": "replace",
@@ -433,31 +356,13 @@
       "framework.navigation_cluster.update_tp_lane_info": "replace",
       "framework.navigation_cluster.update_lane_info": "replace",
       "iap2.init_info.check_supports_features": "change",
-      "iap2.init_info.use_vehicle_information": "change",
-      "iap2.init_info.use_vehicle_status": "change",
-      "iap2.service.on_create": "observe",
-      "iap2.service_receiver.on_receive": "observe",
       "gpm.navigation_status.init": "change",
       "gpm.navigation_status.next_turn": "observe",
       "gpm.navigation_status.next_turn_distance": "observe",
       "gpm.navigation_status.status": "observe",
       "gpm.receiver.send_navigation_focus": "observe",
       "gpm.receiver.destroy": "observe",
-      "dipo.iap2_proxy.stop_route_guidance": "observe",
-      "dipo.btcm.register_listener": "observe",
-      "dipo.carplay.session_created": "observe",
-      "dipo.carplay.session_started": "observe",
-      "dipo.carplay.session_finalized": "observe",
-      "dipo.carplay.iap_message": "observe",
-      "dipo.carplay.disable_bluetooth": "replace",
-      "dipo.utils.is_support_wireless_carplay": "replace",
-      "dipo.iap2_listener.connected": "replace",
-      "dipo.iap2_listener.disconnected": "replace",
-      "dipo.iap2_listener.notify": "replace",
-      "dipo.session_listener.session_details": "observe",
-      "dipo.iap2.bt_address": "change",
-      "dipo.bt.set_carplay_bt_address": "replace",
-      "framework.activity.start_activity_for_result": "change"
+      "dipo.iap2_proxy.stop_route_guidance": "observe"
     },
     "native": {
       "libautoreceiver_infobank.so": [
@@ -465,88 +370,9 @@
         "recipes/aa-tbt-a0bea1c4.recipe",
         "recipes/aa-tbt-dbfe7bd2.recipe"
       ],
-      "libCarPlayCore.so": [
-        "recipes/carplay-core-frames-ef49c09b.recipe",
-        "recipes/carplay-core-wifi.recipe"
-      ],
-      "libCarPlayAudio.so": [
-        "recipes/carplay-audio-formats.recipe"
-      ],
-      "libCarPlayUtils.so": [
-        "recipes/carplay-utils-converter.recipe"
-      ],
       "libExSLNavi.so": [
         "recipes/navi-side-streets-caa8d4c2.recipe"
-      ],
-      "libiap2session.so": [
-        "recipes/carplay-identification-fc7.recipe"
       ]
     }
-  },
-  "network": {
-    "rules": [
-      {
-        "chain": "input",
-        "in": "hotspot",
-        "to": "hotspot",
-        "ip": 4,
-        "proto": "tcp",
-        "ports": [
-          40515
-        ],
-        "state": [
-          "new"
-        ],
-        "action": "accept",
-        "when": "settings.aa_firewall"
-      },
-      {
-        "chain": "input",
-        "in": "hotspot",
-        "ip": 4,
-        "proto": "tcp+udp",
-        "ports": [
-          "5000-5001",
-          5020,
-          5353,
-          "6000-6003",
-          6011,
-          6020,
-          6030,
-          7000
-        ],
-        "both_ways": true,
-        "action": "accept",
-        "when": "settings.cp_firewall"
-      },
-      {
-        "chain": "input",
-        "in": "hotspot",
-        "ip": 6,
-        "proto": "tcp+udp",
-        "ports": [
-          "5000-5001",
-          5020,
-          5353,
-          "6000-6003",
-          6011,
-          6020,
-          6030,
-          6031,
-          7000
-        ],
-        "both_ways": true,
-        "action": "accept",
-        "when": "settings.cp_firewall"
-      },
-      {
-        "chain": "input",
-        "in": "hotspot",
-        "ip": 6,
-        "proto": "icmpv6",
-        "action": "accept",
-        "when": "settings.cp_firewall"
-      }
-    ]
   }
 }

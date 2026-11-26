@@ -11,9 +11,9 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 T=$(mktemp -d)
 trap 'rm -rf "$T"' EXIT
 ${CC:-clang} -O1 -Wall -Wextra -Werror -Wno-unused-function "$HERE/navigraph_test.c" -o "$T/navigraph_test"
-"$T/navigraph_test" "$HERE/../../files/libwlnavigraph.so" ${NAVI_LIB:+"$NAVI_LIB"}
-W=$HERE/../../src/hmgapi/mods/wireless
+"$T/navigraph_test" "$HERE/../../files/libtbtnavigraph.so" ${NAVI_LIB:+"$NAVI_LIB"}
+W=$HERE/../../src/hmgapi/mods/tbt
 javac --release 8 -Xlint:-options -nowarn -d "$T" $(find "$HERE/test" -name '*.java') \
     "$W/NaviGraph.java" "$W/MapJunction.java" "$W/AaTurns.java" $(ls "$W/AaNavState.java" 2>/dev/null) \
     $(find "$HERE/../aaturns/stubs" -name '*.java' ! -path '*/android/content/*')
-java -cp "$T" hmgapi.mods.wireless.NaviGraphTest
+java -cp "$T" hmgapi.mods.tbt.NaviGraphTest

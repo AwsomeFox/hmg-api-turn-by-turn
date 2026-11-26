@@ -192,7 +192,7 @@ check("road graph study: the window and the fit follow NaviGraph",
       and not rgs.fits([0, 60, 120], 90) and not rgs.fits([-85], -90) and rgs.fits([-90, 0, 90], 0) and not rgs.fits([-5, 150], -90))
 lines = []
 for k in range(12):                         # 10 m/s along a 200 m link, then a 100 m one to the crossroad
-    t = "11-21 10:00:%02d.000 I/HMG-API ( 1): [wireless-carplay-aa] road graph: " % k
+    t = "11-21 10:00:%02d.000 I/HMG-API ( 1): [projection-tbt] road graph: " % k
     on, pos = (200, 100 + k * 10) if k < 10 else (100, (k - 10) * 10)
     left = (200 - pos) + 100 if k < 10 else 100 - pos
     node = "2 roads, angles [0, 45], side streets 0x3" if k < 10 else "3 roads, angles [-90, 0, 90], side streets 0x811"

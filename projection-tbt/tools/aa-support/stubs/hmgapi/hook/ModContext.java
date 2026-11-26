@@ -22,7 +22,7 @@ public final class ModContext {
     public void nativePatch(LoadedApp app, String library) { natives.add(library); }
     public void publish(String service, Object value) {}
     public Class<?> appPart(LoadedApp app, String name) {
-        if (!"hmgapi.mods.wireless.dipo.Dipo".equals(name)) throw new AssertionError(name);
+        if (!"hmgapi.mods.tbt.dipo.Dipo".equals(name)) throw new AssertionError(name);
         return CarPlayPart.class;
     }
     public void log(String message) { logs.add(message); }
