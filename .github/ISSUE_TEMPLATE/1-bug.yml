@@ -1,5 +1,5 @@
-name: Wireless CarPlay or Android Auto doesn't work
-description: A bug in this mod (connecting, picture, sound, Bluetooth, turn-by-turn on the cluster or HUD).
+name: Turn-by-turn on the cluster or HUD doesn't work
+description: A bug in this mod (Android Auto's or CarPlay's directions on the cluster or HUD, wired or wireless). Connecting, picture and sound are the Wireless mod's.
 title: "Bug: "
 labels: [bug]
 body:

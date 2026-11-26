@@ -1,98 +1,150 @@
-# Wireless CarPlay + Android Auto for HMG-API
+# Phone Turn-by-Turn for HMG-API (CarPlay + Android Auto)
 
-Use wireless CarPlay and Android Auto on a compatible Gen5W head unit through the
-car's own Wi-Fi hotspot. The mod also brings experimental phone navigation (turn-by-turn) to the instrument
-cluster and head-up display (HUD) on compatible hardware and firmware.
+A mod for [HMG-API](https://github.com/Open-HMG/HMG-API), the mod manager for Hyundai,
+Kia and Genesis Gen5W head units. It puts your phone's directions on the instrument
+cluster and the HUD: Google Maps, Waze and others over Android Auto, Apple Maps and
+others over CarPlay, **wired or wireless**.
 
-[Download the mod](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/releases) ·
-[Confirmed cars](#confirmed-cars) ·
-[Install and connect](#install-and-connect) ·
-[Get help](#troubleshooting)
+It is the turn-by-turn half of the
+[Wireless CarPlay + Android Auto](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa)
+mod, moved here with its history so that:
 
-## Confirmed cars
+- cars with wired phones only (or without the head unit's Wi-Fi hardware) can have it;
+- a car whose HMG-API hook map lacks one turn-by-turn point no longer loses the wireless
+  connection with it, and the other way round.
 
-These are the model, region and firmware combinations with documented on-car
-results. Check the six-digit firmware suffix under **Settings → General →
-Software info**. The mod requires a Gen5W head unit with Wi-Fi hardware and an
-enabled HMG-API hook map. [HMG-API supported cars and hook maps](https://github.com/Open-HMG/HMG-API/wiki/Supported-cars)
+> **Status: set up, not released.** Built and tested off-car only (HMG-API 1.1.0-rc.10
+> SDK). Nothing in this repository has been on a car as its own mod yet. Until it is
+> released, turn-by-turn ships inside the Wireless mod 2.x.
 
-| Car | Region | Firmware |
-| --- | --- | --- |
-| Kia EV6 (`CVEV`) | USA | `260507` |
-| Hyundai Ioniq 5 (`NEEV`, `NEEV23`) | USA | `260507` |
-| Hyundai Ioniq 6 (`CEEV`) | USA | `260507`, `260903` |
-| Hyundai Ioniq 6 (`CEEV`) | Canada | `260206`, `260903` |
-| Hyundai Elantra N (`CN7NPE`) | USA | `260903` |
-| Kia K5 | USA | `260507` |
+## What it does
 
-For the full list of model codes and firmware the installer accepts, see
-[`system` in the mod manifest](wireless-carplay-aa/mod.json#L21).
+| | Android Auto | CarPlay |
+|---|---|---|
+| Next turn, distance and road name on the cluster and HUD | ✅ on the Android Auto library builds below | ✅ |
+| The HUD's turn list, lanes, destination and remaining distance | ✅ | ✅ where the phone sends them |
+| Turns in the car's own format near a maneuver (AR HUD arrow, distance bar) | setting, off by default | setting, off by default |
+| The intersection's side streets around the arrow | test settings (the lanes, the car's map) | setting (the iPhone's junction) |
+| The car's own navigation stays off the cluster while the phone guides | ✅ | ✅ |
 
-## Install and connect
+Settings are in the HMG-API app (pick the mod in its list). The mod itself is the on/off
+switch: there is no separate "turn-by-turn" setting any more.
 
-1. Install or update HMG-API. Mod version **2.2.0-rc.8** requires **HMG-API
-   1.1.0-rc.6 or newer**. [HMG-API installation guide](https://github.com/Open-HMG/HMG-API/wiki/Installing-HMG-API)
-2. Download `wireless-carplay-aa-<version>.zip` and copy it, still zipped, into
-   `HMGAPI/updates/` on a USB stick. [Mod releases](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/releases)
-3. Plug in the stick. In HMG-API, select **Check USB updates**, then **Wireless
-   CarPlay + Android Auto**. On the main screen, tap **Apply changes**. Restart the
-   head unit if prompted.
-4. Remove the installation stick. If the phone was already paired, delete it
-   from **Device Connections** on the head unit. On the phone, forget the car in
-   Bluetooth and remove it from CarPlay or Android Auto settings.
-5. With Bluetooth and Wi-Fi on, open **Phone Projection → Device Connections**
-   on the head unit and pair the phone.
+How it works, in short:
 
-**Alternative NEMESIS installation path**
-Users can extract `wireless-carplay-aa-<version>-nemesis.zip` to the
-root of a USB stick and confirm the install in NEMESIS Manager. HMG-API must
-already be installed. The guide also covers adb, updates and removal.
-[Installing and removing mods](https://github.com/Open-HMG/HMG-API/wiki/Installing-and-removing-mods)
+- **Android Auto:** the car's Android Auto library is patched in memory (the file stays
+  stock) so Maps' turn data reaches the mod, which sends it to the cluster through
+  HMG-API (`AaTurns`). It only runs on library builds it has a verified patch for; on any
+  other, Android Auto's turns stay off and the car's navigation keeps the cluster.
+- **CarPlay:** the mod asks the iPhone for route guidance over iAP2 and sends it to the
+  cluster (`CpTurns`). No file is patched.
+- **Formats and findings:** [docs/cluster-turns.md](docs/cluster-turns.md),
+  [docs/ar-hud.md](docs/ar-hud.md), [docs/intersections.md](docs/intersections.md).
 
-Updates require the same author key as the installed copy. If you installed a
-test build signed with a different key, remove it and apply the removal before
-installing the release. To uninstall an app-installed copy, choose **Remove**
-in HMG-API and tap **Apply changes** to restore the files the mod changed.
+## Cars
 
-## Features and settings
+The list is `system` in [`projection-tbt/mod.json`](projection-tbt/mod.json): the same
+models, regions and head unit software as the Wireless mod 2.2, without needing the
+Wi-Fi hardware. It needs a hook map for the car in HMG-API
+([Supported cars](https://github.com/Open-HMG/HMG-API/wiki/Supported-cars)).
 
-Open the mod in HMG-API to change its settings. Tap **Save settings** before
-**Apply changes**, then restart the head unit if prompted.
+Android Auto's turns also need one of these library builds (`libautoreceiver_infobank.so`):
 
-- **Wireless CarPlay audio and Now Playing** add music and Siri over Wi-Fi and
-  refresh song, artist and album art after connection.
-- **Phone Projection** opens **Device Connections** from the settings menu on US
-  and Canadian builds. USB drives and hubs can stay plugged in without
-  triggering wired Android Auto.
-- **Experimental: Turn-by-turn directions** appear on the cluster and HUD where supported.
-  Android Auto guidance requires a matching firmware recipe. For an AR HUD, try
-  the optional **Turns in the car's own format (AR HUD arrow, distance bar)**
-  setting. [AR HUD behavior and test coverage](docs/ar-hud.md)
-- **Experimental: Park and reconnect** ends the wireless session when you park and leave so
-  calls and audio return to your phone. When you start the car, the head unit
-  asks the last phone to reconnect. Pick another phone in **Device Connections**
-  to switch.
+| md5 starts | Cars it was built from |
+|---|---|
+| `48ee793a` | Ioniq 5 and EV6 US 260507, EV6 Canada 260206 |
+| `a0bea1c4` | Ioniq 5 Canada 260206 |
+| `dbfe7bd2` | Ioniq 6 Canada 260206 and US 260903 |
 
-## Troubleshooting
+## With the Wireless mod
 
-- **Your phone finds the car but won't connect.** Try the hotspot firewall
-  option for CarPlay or Android Auto in the mod's settings. Both options are off
-  by default. Tap **Save settings**, then **Apply changes**, and retry.
-  [CarPlay setup notes](docs/cn7npe-usa-260903.md) ·
-  [Android Auto setup notes](docs/ioniq6-can-260206.md)
-- **HMG-API says the hook map is missing.** Send a Car Report to
-  [HMG-API](https://github.com/Open-HMG/HMG-API/issues/new/choose).
-- **Need more help?** Use **Add my car** if the car or firmware is missing from
-  the mod manifest. For a bug, include your car, firmware, phone and installed
-  versions. Attach a Car Report if you can.
-  [Open a mod issue](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/issues/new/choose) ·
-  [Export a Car Report](https://github.com/Open-HMG/HMG-API/wiki/Car-Report)
+Neither mod requires the other.
 
-## Contributing
+- **Wired only:** install this mod alone.
+- **Wireless:** install both. Use Wireless **3.0 or newer**: older versions still carry
+  these hooks, so this mod refuses to load next to them (`conflicts`).
+- In the CarPlay app the two cooperate without a dependency: the Wireless mod keeps asking
+  the iPhone for route guidance after its Bluetooth-to-Wi-Fi handover, and this mod ignores
+  that handover's disconnects. The whole agreement is in
+  [docs/wireless-contract.md](docs/wireless-contract.md).
+- **NEMESIS packages:** it refuses to install next to `projection.tbt` and
+  `enhanced.projection`, which send the phone's turns themselves.
 
-Build and test the mod, add hook points, or integrate another mod with the
-CarPlay identification API. [Contributor guide](CONTRIBUTING.md)
+## Building and testing
 
-## License
+With the HMG-API mod SDK (`hmgapi-sdk.json` pins it; `./build.sh sdk` in HMG-API builds
+one), a JDK and the Android SDK:
 
-[AGPL-3.0](LICENSE)
+```sh
+$HMGAPI_SDK/bin/build-mod.sh projection-tbt out
+HMGAPI_SDK=$HMGAPI_SDK sh projection-tbt/test.sh          # the engine: plan, apply, restore
+for t in aaturns cpturns aa-support aa-text navi navigraph ceev-tbt recipes; do
+    HMGAPI_SDK=$HMGAPI_SDK sh projection-tbt/tools/$t/test.sh
+done
+```
+
+No car files or keys are needed; the recipe tests on real libraries skip without the
+private stock trees. Hook points live in HMG-API: `hooks.points` here only names points
+HMG-API already has, and a new one is a HMG-API pull request first.
+
+Not set up yet: a release workflow and an author key for this mod
+([CONTRIBUTING](CONTRIBUTING.md)).
+
+### Hook points this mod is waiting for
+
+A mod can only declare points HMG-API already maps on every car it lists: one missing
+point turns all of a mod's hooks off on that car. So these stay out of `mod.json` until
+HMG-API has them:
+
+| For | Points | Where it stands |
+|---|---|---|
+| The distance bar under Android Auto and CarPlay, in the car navigation's own frame so its speed-limit sign stays ([docs/ar-hud.md](docs/ar-hud.md)) | `framework.navigation_cluster.update_tbt_trap_info`, `…update_tbt_trap_info_new`, `framework.navi_tbt_trap_info`, `framework.navi_tbt_trap_info.bar_graph_level` | not proposed to HMG-API yet |
+
+### Still to come over
+
+Two open pull requests on the Wireless repository are not merged here yet, because they
+conflict with the ones that are: route details from the full navigation message
+([#112](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa/pull/112), with
+[#111](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa/pull/111)).
+
+## Credits
+
+This mod is many people's work. Thank you:
+
+- **[VysseCodes](https://github.com/VysseCodes)**: [HMG-API](https://github.com/Open-HMG/HMG-API)
+  and the Wireless CarPlay + Android Auto mod this came out of, including the first
+  Android Auto and CarPlay turn-by-turn in it, and before that
+  [HMG Leafia Plus](https://github.com/VysseCodes/HMG-Leafia-Plus).
+- **[xwtk](https://github.com/xwtk)**: [NEMESIS](https://github.com/xwtk/hmg_nemesis) and
+  its package *Turn-by-Turn Guidance for Phone Projection* (`projection.tbt`). The Android
+  Auto library patch in `projection-tbt/recipes/aa-tbt-*.recipe` reproduces, in memory, the
+  changes of that package's library build (see [NOTICE](NOTICE.md)).
+- **[Isaac Wisdom](https://github.com/isaacwisdom)**: the CarPlay maneuver fix that made
+  CarPlay's turns reach the cluster at all, later CarPlay turn fixes, and reviews.
+- **[Weab-chan](https://github.com/Weab-chan)**: the Ioniq 6 Android Auto library patch
+  (`aa-tbt-dbfe7bd2`) and its checks (`tools/ceev-tbt`).
+- **[AwsomeFox](https://github.com/AwsomeFox)**: the car's own turn format and the AR HUD
+  under Android Auto and CarPlay, side streets, the road-graph reader, and the split into
+  this repository.
+- **[ch0iiih](https://github.com/ch0iiih)**:
+  [HMG_Phone_Projection_TBT](https://github.com/ch0iiih/HMG_Phone_Projection_TBT) (AGPL-3.0).
+  Several fixes here follow its findings, and the road-graph reader is adapted from its
+  native helper (named in the files that use it).
+- **[KSubedi](https://github.com/KSubedi)** and the testers of
+  [Ultimate Wireless Projection](https://github.com/KSubedi/ultimate-wireless-projection)
+  (formerly Evergreen's CarPlay AR builds): road-test findings on Apple Maps' highway exits,
+  stale turns and late details, used in the CarPlay turn handling (no code taken).
+- **[zpoon](https://github.com/zpoon)**: [Evergreen](https://github.com/zpoon/gen5w-Evergreen),
+  and reviews and fixes across Open-HMG.
+- **[hwjang1](https://github.com/hwjang1)**: checked the car's own turn format with CarPlay
+  on a Korean EV6 with the AR HUD.
+- **Bryan Lieberman, Narayan, lemoyneiv, SafariForest, mantene, Joshua Auger, Ian Fisher,
+  DrTaru, Conor McBride** and everyone else in this repository's history
+  (`git shortlog -sn`), and the owners who drove test builds and sent logs.
+- References for the protocols: [aa-proxy-rs](https://github.com/aa-proxy/aa-proxy-rs) and
+  [open-android-auto](https://github.com/mrmees/open-android-auto).
+
+## Licence
+
+[AGPL-3.0](LICENSE), as HMG-API and the Wireless mod. Not affiliated with or endorsed by
+Hyundai, Kia, Genesis, Apple or Google. Modifying a head unit is at your own risk.

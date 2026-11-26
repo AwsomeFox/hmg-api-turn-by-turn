@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        The mod lists each car by model, region and head unit software (`system` in `wireless-carplay-aa/mod.json`).
+        The mod lists each car by model, region and head unit software (`system` in `projection-tbt/mod.json`).
         Only the newest software for each region is supported, and for now only cars sold in the USA and Canada (other regions wait).
         Your car also needs a hook map in HMG-API: if the HMG-API app says it has none, open [a Car Report issue in HMG-API](https://github.com/Open-HMG/HMG-API/issues/new/choose) first.
         Please don't post your VIN, serial numbers, phone numbers or account details.
