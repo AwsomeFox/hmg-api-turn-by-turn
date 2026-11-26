@@ -13,6 +13,9 @@ mod, moved here with its history so that:
 - a car whose HMG-API hook map lacks one turn-by-turn point no longer loses the wireless
   connection with it, and the other way round.
 
+> **Here for now; moving to [Open-HMG](https://github.com/Open-HMG)** once its maintainers have
+> looked at it (links to this repository keep working after the move).
+>
 > **Status: set up, not released.** Built and tested off-car only (HMG-API 1.1.0-rc.10
 > SDK). Nothing in this repository has been on a car as its own mod yet. Until it is
 > released, turn-by-turn ships inside the Wireless mod 2.x.
