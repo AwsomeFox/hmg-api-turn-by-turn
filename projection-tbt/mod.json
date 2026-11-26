@@ -9,7 +9,7 @@
     "Open-HMG contributors"
   ],
   "license": "AGPL-3.0",
-  "repo": "https://github.com/AwsomeFox/hmgapi-projection-tbt",
+  "repo": "https://github.com/AwsomeFox/hmg-api-turn-by-turn",
   "nemesis_conflicts": [
     "projection.tbt",
     "enhanced.projection"
