@@ -2,8 +2,8 @@
 
 How the stock navigation (`com.mnsoft.navi`, its native engine) fills
 `NavigationCluster.updateTBTInfo`, worked out from its cluster code and two drives on a
-US Ioniq 5 (NEEV23, 260507, 2026-11-03). The Wireless mod's Android Auto turn-by-turn
-(`AaTurns`, setting `tbt_standard`) follows it. Nothing here is the car's code; it
+US Ioniq 5 (NEEV23, 260507, 2026-11-03). This mod's Android Auto turn-by-turn
+(`AaTurns`, setting `tbt_standard`; the Wireless mod's before 3.0) follows it. Nothing here is the car's code; it
 describes what the car does.
 
 ## Two formats
@@ -49,7 +49,7 @@ was about 457 m (1,500 ft) out: 0.3 mi 9, 900 ft 6, 800 ft 5, 300 ft 2, 30 ft 1.
 cluster shows it ×10 (90 ... 10). The navigation also sends the same bar in its trap
 data (`updateTBTTrapInfo`, `barGraphLevel`), with the speed limit and cameras. The
 cluster's bar is drawn from that trap data, which also sets the speed-limit sign, so
-the Wireless mod never sends trap data of its own, and under Android Auto the bar stays
+this mod never sends trap data of its own, and under Android Auto the bar stays
 empty for now. [ar-hud.md](ar-hud.md) has the planned way to fill it with the car
 navigation's speed limit kept.
 
@@ -84,7 +84,7 @@ CarPlay's turns follow the same format with the setting on; [ar-hud.md](ar-hud.m
 
 Android Auto guides a roundabout in two steps: `ROUNDABOUT_ENTER_AND_EXIT` with the exit's
 angle before it, then `ROUNDABOUT_EXIT` once the car is in it, usually with no side and no
-angle. The Wireless mod keeps the exit icon from the first for the second, until the next
+angle. This mod keeps the exit icon from the first for the second, until the next
 maneuver.
 
 The exit icons are the car navigation's own, one per 45 degrees: 96 (straight on), 97, 99,
@@ -135,7 +135,7 @@ on a US EV6 while Android Auto's new route settled.
 ## Lanes
 
 The car navigation keeps running under a phone's guidance with no route, and sends the
-lanes of each intersection it passes (`updateLaneInfo`, none marked). The Wireless mod
+lanes of each intersection it passes (`updateLaneInfo`, none marked). This mod
 skips that call while a phone guides; Android Auto's lanes (with its recommended lanes
 marked) go to the cluster alone.
 

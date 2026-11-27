@@ -184,6 +184,20 @@ public final class AaSupportTest {
             wireless.appLoaded(stock, new LoadedApp(Tbt.GPM));
             check(stock.natives.isEmpty() && stock.hooks.isEmpty(), "native GPM TBT is preserved at step 999");
             Car.step = 105;
+            // the "tbt" switch (the Wireless mod 2.x's, taken over): off, nothing anywhere
+            for (String pkg : new String[] { Tbt.GPM, Tbt.DIPO, Tbt.IAP2, Tbt.NAVIGATION }) {
+                ModContext off = enabled();
+                off.settings.put("tbt", false);
+                wireless.appLoaded(off, new LoadedApp(pkg));
+                check(off.hooks.isEmpty() && off.natives.isEmpty() && off.cpStarts == 0, "tbt=false: nothing in " + pkg);
+            }
+            // a value taken over from the Wireless mod this start wins over the default
+            WirelessImport.values = new java.util.LinkedHashMap<String, Boolean>();
+            WirelessImport.values.put("tbt", false);
+            ModContext imported = enabled();
+            wireless.appLoaded(imported, new LoadedApp(Tbt.DIPO));
+            check(imported.cpStarts == 0, "tbt=false taken over from the Wireless mod: no CarPlay part");
+            WirelessImport.values = new java.util.LinkedHashMap<String, Boolean>();
             if (args.length > 0) {
                 File ceev = new File(args[0]);
                 check(ceev.isFile(), "private CEEV library exists");

@@ -10,7 +10,7 @@ import hmgapi.hook.Points;
 /**
  * Phone turn-by-turn: Android Auto's and CarPlay's directions on the cluster and the HUD,
  * wired or wireless. It came out of the Wireless CarPlay + Android Auto mod (Open-HMG
- * hmgapi-wireless-carplay-aa), which keeps the wireless connection itself.
+ * hmgapi-wireless-cp-aa), which keeps the wireless connection itself.
  *
  * Android Auto (GPM): AaTurns, from the Android Auto library's callbacks (gpmTurnByTurn).
  * CarPlay (DiPO): the mod's DiPO part, hmgapi.mods.tbt.dipo.Dipo, with CpTurns.
@@ -33,7 +33,7 @@ public final class Tbt extends ModEntry {
 
     /** side streets from the car's map: needs turn-by-turn and the car's own format (TURN frames) */
     static boolean mapSideStreets(ModContext mod) {
-        return mod.settingBoolean("tbt_map_side_streets", false) && mod.settingBoolean("tbt_standard", false);
+        return mod.settingBoolean("tbt_map_side_streets", false) && WirelessImport.bool(mod, "tbt_standard", false);
     }
 
     private boolean aaTbtSupported() {
@@ -51,8 +51,21 @@ public final class Tbt extends ModEntry {
         "update_tbt_sub_info2_b", "update_tbt_sub_info_2c", "update_remain_dis", "update_tp_crossroad_name",
         "update_tp_destination_name", "update_tp_turn_list", "update_tp_turn_list_new", "update_tp_lane_info", "update_lane_info" };
 
+    /** in the zygote, as root: the owner's turn-by-turn settings from the Wireless mod 2.x, once (WirelessImport) */
+    @Override
+    public void zygoteInit(ModContext mod) {
+        try {
+            String said = WirelessImport.run(new java.io.File("/data/hmgapi/settings"), mod.id);
+            if (said != null) mod.log(said);
+        } catch (Throwable t) {
+            mod.error("turn-by-turn settings from the Wireless mod", t);
+        }
+    }
+
     @Override
     public void appLoaded(final ModContext mod, LoadedApp app) {
+        // the switch carried over from the Wireless mod 2.x ("Turn-by-turn on the cluster and HUD")
+        if (!WirelessImport.bool(mod, "tbt", true)) return;
         if (NAVIGATION.equals(app.packageName)) navigation(mod, app);
         if (IAP2.equals(app.packageName)) iap2(mod, app);
         if (GPM.equals(app.packageName)) gpmTurnByTurn(mod, app);
@@ -180,7 +193,7 @@ public final class Tbt extends ModEntry {
                                     hmgapi.hook.Cluster c = hmgapi.hook.Cluster.of(app.context);
                                     if (c == null) return;
                                     turns.put(receiver, t = new AaTurns(app.context, c, handler));
-                                    t.standardTurns = mod.settingBoolean("tbt_standard", false);
+                                    t.standardTurns = WirelessImport.bool(mod, "tbt_standard", false);
                                     if (mapSideStreets(mod)) t.junctions = new MapJunction(app.context, handler);
                                     t.laneSideStreets = t.standardTurns && mod.settingBoolean("tbt_lane_side_streets", false);
                                     mod.log("Android Auto: navigation callback received; cluster bridge created"

@@ -13,5 +13,6 @@ javac --release 8 -Xlint:-options -nowarn -cp "$ANDROID_JAR" -d "$CP" \
     ../../src/hmgapi/mods/tbt/AaTbtSupport.java \
     ../../src/hmgapi/mods/tbt/NaviGraph.java \
     ../../src/hmgapi/mods/tbt/MapJunction.java \
+    ../../src/hmgapi/mods/tbt/WirelessImport.java \
     ../../src/hmgapi/mods/tbt/Tbt.java
 java -cp "$CP:$ANDROID_JAR" hmgapi.mods.tbt.AaSupportTest "$@"

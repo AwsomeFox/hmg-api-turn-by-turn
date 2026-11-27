@@ -1,7 +1,6 @@
 # Who reviews what. The main branch requires a code owner's review.
-# Everything else: one Open-HMG maintainer.
-*                               @Open-HMG/maintainers
-
-# CI, releases and signing; native code (libraries patched or loaded on the car): the maintainer.
-/.github/                       @VysseCodes @Open-HMG/releasers
-/projection-tbt/native/    @VysseCodes
+# Code owners need write access here, and Open-HMG's teams can't own files in a repository
+# outside that organization: until this repository moves to Open-HMG, its owner reviews
+# everything. After the move: * @Open-HMG/maintainers; /.github/ @VysseCodes
+# @Open-HMG/releasers; /projection-tbt/native/ @VysseCodes.
+*                               @AwsomeFox

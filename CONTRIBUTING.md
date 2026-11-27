@@ -18,9 +18,9 @@ Reports, hook maps) go to [HMG-API](https://github.com/Open-HMG/HMG-API/issues/n
   has; CI checks them against the `"hmgapi"` floor.
 - Mod scripts: only commands the head unit has (`$HMGAPI_SDK/bin/check-scripts.sh projection-tbt`).
 - Leave `version` in `mod.json` as it is: it's set at release.
-- Who reviews what (`.github/CODEOWNERS`): VysseCodes reviews CI, releases and signing
-  (`.github/`) and native code (`projection-tbt/native/`); everything else needs one
-  of the Open-HMG maintainers.
+- Who reviews what (`.github/CODEOWNERS`): AwsomeFox, while the repository is theirs. Once
+  it moves to Open-HMG: VysseCodes reviews CI, releases and signing (`.github/`) and native
+  code (`projection-tbt/native/`); everything else needs one of the Open-HMG maintainers.
 
 ## Releases (maintainers)
 
