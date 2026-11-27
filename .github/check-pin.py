@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The HMG-API pin is in hmgapi-sdk.json (the SDK) and in the mod workflow's @ref in ci.yml
-(and in release.yml, once this repository has one). They must name the same HMG-API:
+and in release.yml. They must name the same HMG-API:
 {"ref": sha} with @sha, {"version": v} with @v<v>. Run by CI."""
 import json, os, re, sys
 pin = json.load(open('hmgapi-sdk.json'))

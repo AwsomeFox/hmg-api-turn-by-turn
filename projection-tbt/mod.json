@@ -20,7 +20,7 @@
       "version": "<3.0.0-beta.1"
     }
   ],
-  "description": "Android Auto's and CarPlay's turn-by-turn directions on the cluster and HUD, wired or wireless. With the Wireless mod, update it to 3.0 first: next to 2.x this mod turns it off.",
+  "description": "Android Auto's and CarPlay's turn-by-turn directions on the cluster and HUD, wired or wireless. Part of the Wireless CarPlay + Android Auto mod until its 3.0: with that mod, update it to 3.0 first (next to 2.x this mod turns it off).",
   "system": [
     {
       "model": [
