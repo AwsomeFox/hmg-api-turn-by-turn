@@ -24,11 +24,25 @@ Reports, hook maps) go to [HMG-API](https://github.com/Open-HMG/HMG-API/issues/n
 
 ## Releases (maintainers)
 
-Not set up yet. This mod is new as its own package: before its first release it needs an
-author key (its UUID is what owners' units accept updates from; the Wireless mod's key
-stays with that mod), a release workflow like the Wireless mod's, and a catalogue entry
-in HMG-API. Versions will follow HMG-API's
-[docs/releasing.md](https://github.com/Open-HMG/HMG-API/blob/main/docs/releasing.md).
+As the Wireless mod's, by HMG-API's [docs/releasing.md](https://github.com/Open-HMG/HMG-API/blob/main/docs/releasing.md):
+set `version` in `projection-tbt/mod.json` and write `.github/release-notes/v<version>.md`
+in a release PR; once it's merged, push the tag `v<version>`. `.github/workflows/release.yml`
+runs CI on the tag, signs the package with `MOD_KEY` (the `release` environment, `v*` tags
+only), builds the NEMESIS packages and `SHA256SUMS`, and attaches them to a **draft**
+release. Publishing it is a maintainer's call. The run's summary has the
+`tools/catalog.py add` command for HMG-API's catalogue (finals), or the
+`tools/release-mods.txt` line (pre-releases, once the mod has a catalogue entry).
+
+- **Author key:** VysseCodes' (`7251ce71-…`, `.github/mod-key.pub`), the same as the
+  Wireless mod's: the key is per author, it's already on HMG-API's trusted list, and it
+  can never change once a release is out. So `MOD_KEY` only goes in a repository
+  VysseCodes controls: this one moves to Open-HMG before its first tag.
+- **`repo` in `mod.json`** must be this repository's address: the release refuses a tag
+  otherwise (HMG-API's catalogue checks the download is a release of the entry's repo).
+  Change it, and the link in HMG-API's `maps/authors.json`, when the repository moves.
+- **The first release goes out with Wireless 3.0**, and owners update Wireless first: next
+  to Wireless 2.x this mod turns Wireless's hooks off (`conflicts`). The order across the
+  repositories is in HMG-API's release checklist for the split.
 
 ## Rules
 

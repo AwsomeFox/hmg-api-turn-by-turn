@@ -59,6 +59,21 @@ Android Auto's turns also need one of these library builds (`libautoreceiver_inf
 | `a0bea1c4` | Ioniq 5 Canada 260206 |
 | `dbfe7bd2` | Ioniq 6 Canada 260206 and US 260903 |
 
+## Updating from the Wireless mod 2.x
+
+Until 3.0, turn-by-turn was part of
+[Wireless CarPlay + Android Auto](https://github.com/Open-HMG/hmgapi-wireless-cp-aa). If
+you have Wireless 2.x and want to keep your directions on the cluster and HUD:
+
+1. **Update Wireless to 3.0 first.** It has no turn-by-turn of its own.
+2. **Then install this mod.** Installed next to Wireless 2.x, it turns *Wireless's* hooks
+   off (both have the same hooks, and HMG-API loads one), so wireless CarPlay and Android
+   Auto stop until Wireless is 3.0.
+3. Set your turn-by-turn settings again in the HMG-API app (pick **Phone Turn-by-Turn**):
+   they were Wireless's and don't come across.
+
+Going back: remove this mod first, then install Wireless 2.2, which has turn-by-turn built in.
+
 ## With the Wireless mod
 
 Neither mod requires the other.
@@ -90,8 +105,8 @@ No car files or keys are needed; the recipe tests on real libraries skip without
 private stock trees. Hook points live in HMG-API: `hooks.points` here only names points
 HMG-API already has, and a new one is a HMG-API pull request first.
 
-Not set up yet: a release workflow and an author key for this mod
-([CONTRIBUTING](CONTRIBUTING.md)).
+Releases: a tag `v<version>` drafts a signed release
+([CONTRIBUTING](CONTRIBUTING.md#releases-maintainers)).
 
 ### Hook points this mod is waiting for
 

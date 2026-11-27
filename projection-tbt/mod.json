@@ -20,7 +20,7 @@
       "version": "<3.0.0-beta.1"
     }
   ],
-  "description": "Android Auto's and CarPlay's turn-by-turn directions on the cluster and HUD, wired or wireless.",
+  "description": "Android Auto's and CarPlay's turn-by-turn directions on the cluster and HUD, wired or wireless. Until Wireless CarPlay + Android Auto 3.0 this was part of that mod: update Wireless to 3.0 first, then install this one.",
   "system": [
     {
       "model": [
