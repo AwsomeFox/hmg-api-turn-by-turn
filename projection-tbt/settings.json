@@ -2,6 +2,14 @@
   "version": 1,
   "settings": [
     {
+      "key": "tbt",
+      "type": "toggle",
+      "default": true,
+      "title": "Turn-by-turn on the cluster and HUD",
+      "apply": "restart",
+      "description": "The switch the Wireless mod 2.x had, kept so owners who had it off keep it off: with it off this mod does nothing (turning the mod off in HMG-API does the same). This mod takes over your turn-by-turn settings from the Wireless mod 2.x once, the first time it starts, if you haven't saved any of its own. Takes effect when the head unit restarts."
+    },
+    {
       "key": "tbt_standard",
       "type": "toggle",
       "default": false,

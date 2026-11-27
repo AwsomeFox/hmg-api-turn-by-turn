@@ -47,7 +47,7 @@ applied".
 ### A recipe for another car
 
 ```
-python3 wireless-carplay-aa/tools/navi/side-streets-recipe.py <libExSLNavi.so> --out wireless-carplay-aa/recipes/navi-side-streets-<md5:8>.recipe
+python3 projection-tbt/tools/navi/side-streets-recipe.py <libExSLNavi.so> --out projection-tbt/recipes/navi-side-streets-<md5:8>.recipe
 ```
 
 It finds everything by exported symbol and instruction pattern (the flag's offset from
@@ -116,7 +116,7 @@ bytes, to compare builds across cars.
   ch0iiih's Korean builds use 0x2100, so it's per engine profile.
 
 **Step 1, in the mod (test setting `navi_road_graph`, off by default):** read and log only.
-- `native/navigraph` (`files/libwlnavigraph.so`, installed in `/system/lib` and loaded only
+- `native/navigraph` (`files/libtbtnavigraph.so`, installed in `/system/lib` and loaded only
   with the setting) is ch0iiih's helper without the Korean pins:
   - every symbol through `dlsym(RTLD_DEFAULT)`, and refused unless `dladdr` puts it in
     `libExSLNavi.so`;

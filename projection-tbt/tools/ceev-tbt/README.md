@@ -44,7 +44,7 @@ no manufacturer bytes, binaries, dumps or personal logs in this directory.
 The default check needs only Python 3 and does not require stock files:
 
 ```sh
-sh wireless-carplay-aa/tools/ceev-tbt/test.sh
+sh projection-tbt/tools/ceev-tbt/test.sh
 ```
 
 For the private integration tests, point `CEEV_STOCK_LIBRARY` at a read-only copy
@@ -54,7 +54,7 @@ commands are used and the stock file is not modified.
 
 ```sh
 CEEV_STOCK_LIBRARY=/private/path/libautoreceiver_infobank.so \
-  sh wireless-carplay-aa/tools/ceev-tbt/test.sh
+  sh projection-tbt/tools/ceev-tbt/test.sh
 ```
 
 The test first uses the actual SDK `MemRecipe` implementation to check all guards,

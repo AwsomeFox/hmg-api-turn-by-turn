@@ -1,6 +1,6 @@
 # The AR HUD and the speed limit under Android Auto (and CarPlay's turns)
 
-How the Wireless mod gets the AR HUD to animate Android Auto's turns, and what it will
+How this mod gets the AR HUD to animate Android Auto's turns, and what it will
 take to fill the cluster's distance bar without losing the car's speed-limit sign (the
 sections marked "Planned" aren't in the mod yet). Worked out
 on a US Ioniq 5 with the AR HUD (NEEV23, head unit 260507, November 2026) from
@@ -172,9 +172,9 @@ already has the right speed limit.
 
 1. **In GPM**, with standard turns on, `AaTurns` will work out the bar the way the car
    does, `(100 - progress) / 10`, at least 1, over about 457 m, sent ×10 (90 down to 10),
-   and broadcast it (`hmgapi.mods.wireless.TBT_BAR`, extra `bar`) when it changes, every
+   and broadcast it (`hmgapi.mods.tbt.TBT_BAR`, extra `bar`) when it changes, every
    2 s while it's on, and 0 when guidance stops.
-2. **In the car's navigation** (`com.mnsoft.navi`), a Wireless hook on
+2. **In the car's navigation** (`com.mnsoft.navi`), a hook of this mod on
    `updateTBTTrapInfo` (both forms: 17 ints, or `NaviTbtTrapInfo`) will put the bar into
    each trap frame the navigation sends. Everything else in the frame stays the car's:
    the speed limit, its unit and type, cameras and warnings.
@@ -188,7 +188,7 @@ already has the right speed limit.
 `framework.navigation_cluster.update_tbt_trap_info_new`, `framework.navi_tbt_trap_info`
 and `framework.navi_tbt_trap_info.bar_graph_level`. HMG-API turns off all of a mod's
 hooks on a car whose map lacks a point the mod declares, so they have to be in HMG-API's
-catalogue and mapped on every car before the bar can ship in Wireless: a HMG-API pull
+catalogue and mapped on every car before the bar can ship in this mod: a HMG-API pull
 request (not opened yet), then `map-car.py` on the stock trees, or "Map this car from its
 files" on cars mapped from Car Reports.
 

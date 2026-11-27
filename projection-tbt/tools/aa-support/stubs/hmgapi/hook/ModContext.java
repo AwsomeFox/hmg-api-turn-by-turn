@@ -7,6 +7,7 @@ import java.util.Map;
 
 /** Records observable app-loading effects; unexpected failures fail the host test. */
 public final class ModContext {
+    public final String id = "projection-tbt";
     public final Map<String, Boolean> settings = new LinkedHashMap<String, Boolean>();
     public final Map<String, MethodHook> hooks = new LinkedHashMap<String, MethodHook>();
     public final List<String> natives = new ArrayList<String>();

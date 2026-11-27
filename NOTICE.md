@@ -2,7 +2,7 @@
 
 ## Where this repository comes from
 
-It was made from [Open-HMG/hmgapi-wireless-carplay-aa](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa)
+It was made from [Open-HMG/hmgapi-wireless-cp-aa](https://github.com/Open-HMG/hmgapi-wireless-cp-aa) (then named hmgapi-wireless-carplay-aa)
 (AGPL-3.0) with its full history, keeping the turn-by-turn half of that mod. Every
 earlier commit and its author are in `git log`. That mod itself moved out of
 [HMG-API](https://github.com/Open-HMG/HMG-API)'s `mods/wireless-carplay-aa` (AGPL-3.0),

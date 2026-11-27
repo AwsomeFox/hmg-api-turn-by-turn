@@ -6,7 +6,7 @@ cluster and the HUD: Google Maps, Waze and others over Android Auto, Apple Maps 
 others over CarPlay, **wired or wireless**.
 
 It is the turn-by-turn half of the
-[Wireless CarPlay + Android Auto](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa)
+[Wireless CarPlay + Android Auto](https://github.com/Open-HMG/hmgapi-wireless-cp-aa)
 mod, moved here with its history so that:
 
 - cars with wired phones only (or without the head unit's Wi-Fi hardware) can have it;
@@ -30,8 +30,12 @@ mod, moved here with its history so that:
 | The intersection's side streets around the arrow | test settings (the lanes, the car's map) | setting (the iPhone's junction) |
 | The car's own navigation stays off the cluster while the phone guides | ✅ | ✅ |
 
-Settings are in the HMG-API app (pick the mod in its list). The mod itself is the on/off
-switch: there is no separate "turn-by-turn" setting any more.
+Settings are in the HMG-API app (pick the mod in its list). The first time it starts, the
+mod takes over the turn-by-turn settings you had in the Wireless mod 2.x ("Turn-by-turn on
+the cluster and HUD", the car's own format, CarPlay's side streets), unless you've already
+saved settings of its own: HMG-API doesn't carry settings from one mod to another. The
+"Turn-by-turn on the cluster and HUD" switch is kept for that; turning the mod off in
+HMG-API does the same.
 
 How it works, in short:
 
@@ -64,12 +68,15 @@ Android Auto's turns also need one of these library builds (`libautoreceiver_inf
 Neither mod requires the other.
 
 - **Wired only:** install this mod alone.
-- **Wireless:** install both. Use Wireless **3.0 or newer**: older versions still carry
-  these hooks, so this mod refuses to load next to them (`conflicts`).
+- **Wireless:** install both, and **update Wireless to 3.0 first**. Wireless 2.x still
+  carries these hooks, so the two conflict, and of two mods that conflict HMG-API loads the
+  first in load order: this one (`projection-tbt` comes before `wireless-carplay-aa`).
+  Installed next to 2.x, this mod turns the Wireless mod off (Wireless 2.2's hooks are also
+  refused for `framework.navigation_cluster.update_tbt_info`, which this mod replaces).
 - In the CarPlay app the two cooperate without a dependency: the Wireless mod keeps asking
   the iPhone for route guidance after its Bluetooth-to-Wi-Fi handover, and this mod ignores
-  that handover's disconnects. The whole agreement is in
-  [docs/wireless-contract.md](docs/wireless-contract.md).
+  that handover's disconnects. The whole agreement is in the Wireless repository's
+  [docs/tbt-contract.md](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/blob/main/docs/tbt-contract.md).
 - **NEMESIS packages:** it refuses to install next to `projection.tbt` and
   `enhanced.projection`, which send the phone's turns themselves.
 
@@ -81,7 +88,7 @@ one), a JDK and the Android SDK:
 ```sh
 $HMGAPI_SDK/bin/build-mod.sh projection-tbt out
 HMGAPI_SDK=$HMGAPI_SDK sh projection-tbt/test.sh          # the engine: plan, apply, restore
-for t in aaturns cpturns aa-support aa-text navi navigraph ceev-tbt recipes; do
+for t in aaturns cpturns aa-support aa-text settings-import navi navigraph ceev-tbt recipes; do
     HMGAPI_SDK=$HMGAPI_SDK sh projection-tbt/tools/$t/test.sh
 done
 ```
@@ -107,8 +114,8 @@ HMG-API has them:
 
 Two open pull requests on the Wireless repository are not merged here yet, because they
 conflict with the ones that are: route details from the full navigation message
-([#112](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa/pull/112), with
-[#111](https://github.com/Open-HMG/hmgapi-wireless-carplay-aa/pull/111)).
+([#112](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/pull/112), with
+[#111](https://github.com/Open-HMG/hmgapi-wireless-cp-aa/pull/111)).
 
 ## Credits
 

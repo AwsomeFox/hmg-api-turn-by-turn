@@ -32,7 +32,7 @@ import hmgapi.hook.ModContext;
  *
  * Wired CarPlay needs nothing else. With the Wireless CarPlay + Android Auto mod (3.0 or
  * newer) in the same app, the two work together without either requiring the other
- * (docs/wireless-contract.md has the whole agreement):
+ * (the Wireless repository's docs/tbt-contract.md has the whole agreement):
  *  - WIRELESS_UP: a system property of this process the Wireless mod sets to "1" while a
  *    wireless CarPlay session is up. iAP2 moves from the Bluetooth session (component 4)
  *    to the CarPlay channel's (5) then, and those two ending isn't the phone leaving.
@@ -123,8 +123,8 @@ public final class Dipo {
                 restartRouteGuidance();
             }
         });
-        turns.standardTurns = mod.settingBoolean("tbt_standard", false);
-        turns.sideStreets = turns.standardTurns && mod.settingBoolean("tbt_side_streets", false);
+        turns.standardTurns = hmgapi.mods.tbt.WirelessImport.bool(mod, "tbt_standard", false);
+        turns.sideStreets = turns.standardTurns && hmgapi.mods.tbt.WirelessImport.bool(mod, "tbt_side_streets", false);
         if (turns.standardTurns) log("CarPlay: turns in the car's own format near a maneuver (standard turns)"
                 + (turns.sideStreets ? ", with the iPhone's side streets" : ""));
         rg = new RgListener();
